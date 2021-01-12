@@ -29,9 +29,9 @@ import clip
 from PIL import Image
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model, transform = clip.load("ViT-B/32", device=device)
+model, preprocess = clip.load("ViT-B/32", device=device)
 
-image = transform(Image.open("CLIP.png")).unsqueeze(0).to(device)
+image = preprocess(Image.open("CLIP.png")).unsqueeze(0).to(device)
 text = clip.tokenize(["a diagram", "a dog", "a cat"]).to(device)
 
 with torch.no_grad():
@@ -40,7 +40,7 @@ with torch.no_grad():
     
     logits_per_image, logits_per_text = model(image, text)
     probs = logits_per_image.softmax(dim=-1).cpu().numpy()
-    
+
 print("Label probs:", probs)  # prints: [[0.9927937  0.00421068 0.00299572]]
 ```
 
@@ -53,9 +53,11 @@ The CLIP module `clip` provides the following methods:
 
 Returns the name(s) of the available CLIP models.
 
-#### `clip.load(name, device=...)`
+#### `clip.load(name, device=..., jit=True)`
 
 Returns the model and the TorchVision transform needed by the model, specified by the model name returned by `clip.available_models()`. It will download the model as necessary. The device to run the model can be optionally specified, and the default is to use the first CUDA device if there is any, otherwise the CPU.
+
+When `jit` is `False`, a non-JIT version of the model will be loaded.
 
 #### `clip.tokenize(text: Union[str, List[str]], context_length=77)`
 

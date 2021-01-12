@@ -23,7 +23,7 @@ Please see the paper linked below for further details about their specification.
 ### Documents
 
 - [Blog Post](https://openai.com/blog/clip/)
-- [CLIP Paper](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language.pdf)
+- [CLIP Paper](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf)
 
 
 
