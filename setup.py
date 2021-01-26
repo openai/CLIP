@@ -9,18 +9,22 @@ extras_require={
     'cuda': ['cudatoolkit==11.0'],
     'dev': ['pytest']
 }
+package_data = [str(x) for x in list(Path('clip').rglob("*.gz"))]
+package_data.extend([str(x) for x in list(Path('clip').rglob("*.md"))])
 
 setup(
     name='clip_by_openai',
     version='0.1.0',
-    author="OpenAI",
+    author="OpenAI (Packaged by Vector AI)",
     author_email="dev@vctr.ai",
     description="CLIP by OpenAI",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="vector, embeddings, machinelearning, ai, artificialintelligence, nlp, pytorch, nearestneighbors, search, analytics, clustering, dimensionalityreduction",
-    license="Apache",
+    license="MIT",
     packages=find_packages(exclude=["tests*"]),
+    package_data={'vectorhub': package_data},
+    include_package_data=True,
     python_requires=">=3",
     install_requires=core_req,
     extras_require=extras_require,
