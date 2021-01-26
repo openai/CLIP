@@ -3,6 +3,7 @@
 
 import os
 from setuptools import setup, find_packages
+from pathlib import Path
 
 core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision']
 extras_require={
@@ -14,7 +15,7 @@ package_data.extend([str(x) for x in list(Path('clip').rglob("*.md"))])
 
 setup(
     name='clip_by_openai',
-    version='0.1.0',
+    version='0.1.1',
     author="OpenAI (Packaged by Vector AI)",
     author_email="dev@vctr.ai",
     description="CLIP by OpenAI",
