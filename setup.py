@@ -4,11 +4,11 @@
 from setuptools import setup, find_packages
 import os
 
-core_req = ['ftfy', 'regex', 'tqdm', 'pytorch==1.7.1', 'torchvision']
+core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision']
 extra_requires={'cuda': ['cudatoolkit==11.0']}
 
 setup(
-    name=name,
+    name='clip_by_openai',
     version='0.1.0',
     author="OpenAI",
     author_email="dev@vctr.ai",
