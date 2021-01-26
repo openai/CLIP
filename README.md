@@ -14,8 +14,6 @@ CLIP (Contrastive Language-Image Pre-Training) is a neural network trained on a 
 
 ## Usage
 
-First, [install PyTorch 1.7.1](https://pytorch.org/get-started/locally/) and torchvision, as well as small additional dependencies. On a CUDA GPU machine, the following will do the trick:
-
 ```bash
 $ pip install clip-by-openai 
 ```
