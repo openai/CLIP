@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
 import os
+from setuptools import setup, find_packages
 
 core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision']
 extra_requires={'cuda': ['cudatoolkit==11.0']}
