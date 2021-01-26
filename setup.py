@@ -5,7 +5,7 @@ import os
 from setuptools import setup, find_packages
 from pathlib import Path
 
-core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision']
+core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision==0.8.2']
 extras_require={
     'cuda': ['cudatoolkit==11.0'],
     'dev': ['pytest']
@@ -15,7 +15,7 @@ package_data.extend([str(x) for x in list(Path('clip').rglob("*.md"))])
 
 setup(
     name='clip_by_openai',
-    version='0.1.1',
+    version='0.1.1.2',
     author="OpenAI (Packaged by Vector AI)",
     author_email="dev@vctr.ai",
     description="CLIP by OpenAI",
