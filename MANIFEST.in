@@ -1,0 +1,2 @@
+include LICENSE
+include clip/bpe_simple_vocab_16e6.txt.gz
