@@ -5,7 +5,8 @@ import os
 from setuptools import setup, find_packages
 
 core_req = ['ftfy', 'regex', 'tqdm', 'torch==1.7.1', 'torchvision']
-extra_requires={'cuda': ['cudatoolkit==11.0']}
+extras_require={'cuda': ['cudatoolkit==11.0'],
+                'dev': ['pytest']}
 
 setup(
     name='clip_by_openai',
@@ -20,7 +21,7 @@ setup(
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3",
     install_requires=core_req,
-    extra_requires=extra_requires,
+    extras_require=extras_require,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
