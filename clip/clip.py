@@ -9,8 +9,8 @@ from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from tqdm import tqdm
 
-from model import build_model
-from simple_tokenizer import SimpleTokenizer as _Tokenizer
+from .model import build_model
+from .simple_tokenizer import SimpleTokenizer as _Tokenizer
 
 __all__ = ["available_models", "load", "tokenize"]
 _tokenizer = _Tokenizer()
@@ -24,7 +24,7 @@ _MODELS = {
 def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
-    
+
     expected_sha256 = url.split("/")[-2]
     download_target = os.path.join(root, filename)
 
@@ -38,7 +38,7 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
             warnings.warn(f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file")
 
     with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        with tqdm(total=int(source.info().get("Content-Length")), ncols=80) as loop:        
+        with tqdm(total=int(source.info().get("Content-Length")), ncols=80) as loop:
             while True:
                 buffer = source.read(8192)
                 if not buffer:
@@ -75,6 +75,8 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
     if not jit:
         model = build_model(model.state_dict()).to(device)
+        if str(device) == "cpu":
+            model.float()
         return model, transform
 
     # patch the device names
@@ -96,7 +98,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     patch_device(model.encode_text)
 
     # patch dtype to float32 on CPU
-    if device == "cpu":
+    if str(device) == "cpu":
         float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
         float_input = list(float_holder.graph.findNode("aten::to").inputs())[1]
         float_node = float_input.node()
