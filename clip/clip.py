@@ -75,6 +75,8 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
     if not jit:
         model = build_model(model.state_dict()).to(device)
+        if device == "cpu":
+            model.float()
         return model, transform
 
     # patch the device names
