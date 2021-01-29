@@ -329,11 +329,11 @@ class CLIP(nn.Module):
 
         # cosine similarity as logits
         logit_scale = self.logit_scale.exp()
-        logits_per_iamge = logit_scale * image_features @ text_features.t()
+        logits_per_image = logit_scale * image_features @ text_features.t()
         logits_per_text = logit_scale * text_features @ image_features.t()
 
         # shape = [global_batch_size, global_batch_size]
-        return logits_per_iamge, logits_per_text
+        return logits_per_image, logits_per_text
 
 
 def convert_weights(model: nn.Module):
