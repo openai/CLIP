@@ -1,6 +1,11 @@
 # CLIP
-
-[[Blog]](https://openai.com/blog/clip/) [[Paper]](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf) [[Model Card]](model-card.md) [[Colab]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/openai/CLIP/blob/master/LICENSE)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
+[![Blog](https://img.shields.io/badge/Blog-Docs-Green.svg)](https://openai.com/blog/clip/)
+[![Paper](https://img.shields.io/badge/openai-Docs-Green)](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf)
+[![Github Forks](https://img.shields.io/github/forks/openai/clip.svg)](https://github.com/openai/CLIP/network)
+[![GitHub Open Issues](https://img.shields.io/github/issues/openai/clip.svg)](https://github.com/openai/CLIP/issues)
+[![Model Card](https://img.shields.io/badge/Model-Card-green.svg)](https://github.com/openai/CLIP/blob/master/model-card.md)
 
 CLIP (Contrastive Language-Image Pre-Training) is a neural network trained on a variety of (image, text) pairs. It can be instructed in natural language to predict the most relevant text snippet, given an image, without directly optimizing for the task, similarly to the zero-shot capabilities of GPT-2 and 3. We found CLIP matches the performance of the original ResNet50 on ImageNet “zero-shot” without using any of the original 1.28M labeled examples, overcoming several major challenges in computer vision.
 
