@@ -56,9 +56,9 @@ Returns the names of the available CLIP models.
 
 #### `clip.load(name, device=..., jit=True)`
 
-Returns the model and the TorchVision transform needed by the model, specified by the model name returned by `clip.available_models()`. It will download the model as necessary. The device to run the model can be optionally specified, and the default is to use the first CUDA device if there is any, otherwise the CPU.
+Returns the model and the TorchVision transform needed by the model, specified by the model name returned by `clip.available_models()`. It will download the model as necessary. The `name` argument can also be a path to a local checkpoint.
 
-When `jit` is `False`, a non-JIT version of the model will be loaded.
+The device to run the model can be optionally specified, and the default is to use the first CUDA device if there is any, otherwise the CPU. When `jit` is `False`, a non-JIT version of the model will be loaded.
 
 #### `clip.tokenize(text: Union[str, List[str]], context_length=77)`
 
