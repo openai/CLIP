@@ -16,14 +16,16 @@ The base model uses a ResNet50 with several modifications as an image encoder an
 
 ### Model Version
 
-Initially we’ve released one CLIP model based on the Vision Transformer architecture equivalent to ViT-B/32
+Initially, we’ve released one CLIP model based on the Vision Transformer architecture equivalent to ViT-B/32, along with the RN50 model, using the architecture equivalent to ResNet-50.
+
+As part of the staged release process, we have also released the RN101 model, as well as RN50x4, a RN50 scaled up 4x according to the [EfficientNet](https://arxiv.org/abs/1905.11946) scaling rule.
 
 Please see the paper linked below for further details about their specification.
 
 ### Documents
 
 - [Blog Post](https://openai.com/blog/clip/)
-- [CLIP Paper](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf)
+- [CLIP Paper](https://arxiv.org/abs/2103.00020)
 
 
 
