@@ -71,11 +71,19 @@ class SimpleTokenizer(object):
         for merge in merges:
             vocab.append(''.join(merge))
         vocab.extend(['<|startoftext|>', '<|endoftext|>'])
+        self.vocab = vocab
         self.encoder = dict(zip(vocab, range(len(vocab))))
         self.decoder = {v: k for k, v in self.encoder.items()}
         self.bpe_ranks = dict(zip(merges, range(len(merges))))
         self.cache = {'<|startoftext|>': '<|startoftext|>', '<|endoftext|>': '<|endoftext|>'}
         self.pat = re.compile(r"""<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+""", re.IGNORECASE)
+
+    def extend(self, tokens):
+        self.vocab.extend(tokens)
+        self.encoder = dict(zip(self.vocab, range(len(self.vocab))))
+        self.decoder = {v: k for k, v in self.encoder.items()}
+        for token in tokens:
+            self.cache[token] = token
 
     def bpe(self, token):
         if token in self.cache:
