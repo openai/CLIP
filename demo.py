@@ -40,6 +40,12 @@ inputs = [
 outputs = gr.outputs.Label(type="confidences",num_top_classes=5)
 
 title = "CLIP"
-description = "CLIP demo"
+description = "demo for OpenAI's CLIP. To use it, simply upload your image, or click one of the examples to load them and optionally add a text label seperated by commas to help clip classify the image better. Read more at the links below."
+article = "<p style='text-align: center'><a href='https://openai.com/blog/clip/'>CLIP: Connecting Text and Images</a> | <a href='https://github.com/openai/CLIP'>Github Repo</a></p>"
 
-gr.Interface(classify, inputs, outputs, title=title, description=description).launch(debug=True)
+examples = [
+    ["zebra.jpg"],
+    ["giraffe.jpg"]
+]
+
+gr.Interface(classify, inputs, outputs, title=title, description=description, examples=examples).launch(debug=True)
