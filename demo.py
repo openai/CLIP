@@ -48,4 +48,4 @@ examples = [
     ["giraffe.jpg"]
 ]
 
-gr.Interface(classify, inputs, outputs, title=title, description=description, examples=examples).launch(debug=True)
+gr.Interface(classify, inputs, outputs, title=title, description=description, examples=examples, article=article).launch(debug=True)
