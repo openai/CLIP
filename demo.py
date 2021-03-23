@@ -35,7 +35,7 @@ def classify(img, user_text):
 
 inputs = [
   gr.inputs.Image(type='pil', label="Original Image"),
-  gr.inputs.Textbox(lines=1)
+  gr.inputs.Textbox(lines=1, label="optional categories")
 ]
 outputs = gr.outputs.Label(type="confidences",num_top_classes=5)
 
