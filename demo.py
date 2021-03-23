@@ -5,7 +5,7 @@ from torchvision.datasets import CIFAR100
 import gradio as gr
 
 # Load the model
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 model, preprocess = clip.load('ViT-B/32', device)
 
 # Download the dataset
