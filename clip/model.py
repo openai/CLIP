@@ -424,8 +424,7 @@ def build_model(state_dict: dict):
     )
 
     for key in ["input_resolution", "context_length", "vocab_size"]:
-        if key in state_dict:
-            del state_dict[key]
+        del state_dict[key]
 
     convert_weights(model)
     model.load_state_dict(state_dict)
