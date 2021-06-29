@@ -365,7 +365,7 @@ class CLIP(nn.Module):
         logits_per_text = logit_scale * text_features @ image_features.t()
 
         # shape = [global_batch_size, global_batch_size]
-        return logits_per_image, logits_per_text
+        return logits_per_image, logits_per_text, logit_scale
 
 
 def convert_weights(model: nn.Module):
