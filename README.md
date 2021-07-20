@@ -54,7 +54,7 @@ The CLIP module `clip` provides the following methods:
 
 Returns the names of the available CLIP models.
 
-#### `clip.load(name, device=..., jit=True)`
+#### `clip.load(name, device=..., jit=False)`
 
 Returns the model and the TorchVision transform needed by the model, specified by the model name returned by `clip.available_models()`. It will download the model as necessary. The `name` argument can also be a path to a local checkpoint.
 
