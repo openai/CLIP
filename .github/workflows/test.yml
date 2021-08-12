@@ -1,0 +1,17 @@
+name: test
+on: push
+jobs:
+  CLIP-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
+        pytorch-version: [1.7.1, 1.9.0]
+    steps:
+      - uses: conda-incubator/setup-miniconda@v2
+      - run: conda install -n test python=${{ matrix.python-version }} pytorch=${{ matrix.pytorch-version }} torchvision cpuonly -c pytorch
+      - uses: actions/checkout@v2
+      - run: echo "$CONDA/envs/test/bin" >> $GITHUB_PATH
+      - run: pip install pytest
+      - run: pip install .
+      - run: pytest
