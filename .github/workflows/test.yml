@@ -1,5 +1,11 @@
 name: test
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
   CLIP-test:
     runs-on: ubuntu-latest
