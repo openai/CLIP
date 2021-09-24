@@ -6,7 +6,7 @@ The subset contains 14,829,396 images, about 15% of the full dataset, which have
 
 We provide the list of (line number, photo identifier, photo hash) of each image contained in this subset. These correspond to the first three columns in the dataset's metadata TSV file.
 
-```
+```bash
 wget https://openaipublic.azureedge.net/clip/data/yfcc100m_subset_data.tsv.bz2
 bunzip2 yfcc100m_subset_data.tsv.bz2
 ```
