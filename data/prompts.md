@@ -4,6 +4,8 @@ Below are the class names and templates that are used for collecting the zero-sh
 
 This file contains prompt data for 26 of the 27 datasets shown in Table 9 of the paper; the text prompts for ImageNet (as well as other [ImageNet Testbed](https://modestyachts.github.io/imagenet-testbed/) datasets in Figure 13) can be found in [this notebook](https://github.com/openai/CLIP/blob/main/notebooks/Prompt_Engineering_for_ImageNet.ipynb), as well as how to ensemble predictions from multiple prompts using these templates.
 
+If you are viewing this document on GitHub, use the table of contents icon at the upper left to browse the datasets.
+
 
 ## Birdsnap
 
@@ -1156,16 +1158,16 @@ templates = [
 
 ```bash
 classes = [
-    'AnnualCrop'
-    'Forest'
-    'HerbaceousVegetation'
-    'Highway'
-    'Industrial'
-    'Pasture'
-    'PermanentCrop'
-    'Residential'
-    'River'
-    'SeaLake'
+    'forest'
+    'permanent crop land'
+    'residential buildings or homes or apartments'
+    'river'
+    'pasture land'
+    'lake or sea'
+    'brushland or shrubland'
+    'annual crop land'
+    'industrial buildings or commercial buildings'
+    'highway or road'
 ],
 
 templates = [
