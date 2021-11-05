@@ -19,7 +19,7 @@ except ImportError:
     BICUBIC = Image.BICUBIC
 
 
-if [int(n.split("+")[0]) for n in torch.__version__.split(".")] < [1, 7, 1]:
+if [int(n.split("+")[0]) for n in torch.__version__.split(".")[:3]] < [1, 7, 1]:
     warnings.warn("PyTorch version 1.7.1 or higher is recommended")
 
 
