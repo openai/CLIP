@@ -186,7 +186,7 @@ classifier.fit(train_features, train_labels)
 
 # Evaluate using the logistic regression classifier
 predictions = classifier.predict(test_features)
-accuracy = np.mean((test_labels == predictions).astype(np.float)) * 100.
+accuracy = np.mean((test_labels == predictions).astype(float)) * 100.
 print(f"Accuracy = {accuracy:.3f}")
 ```
 
