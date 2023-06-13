@@ -36,8 +36,6 @@ image = preprocess(Image.open("CLIP.png")).unsqueeze(0).to(device)
 text = clip.tokenize(["a diagram", "a dog", "a cat"]).to(device)
 
 with torch.no_grad():
-    image_features = model.encode_image(image)
-    
     logits_per_image, logits_per_text = model(image, text)
     probs = logits_per_image.softmax(dim=-1).cpu().numpy()
 
