@@ -2,7 +2,7 @@
 
 In the paper, we performed a dataset ablation using a subset of the YFCC100M dataset and showed that the performance remained largely similar. 
 
-The subset contains 14,829,396 images, about 15% of the full dataset, which have been filtered to only keep those with natural languag titles and/or descriptions in English.
+The subset contains 14,829,396 images, about 15% of the full dataset, which have been filtered to only keep those with natural language titles and/or descriptions in English.
 
 We provide the list of (line number, photo identifier, photo hash) of each image contained in this subset. These correspond to the first three columns in the dataset's metadata TSV file.
 
