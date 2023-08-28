@@ -81,7 +81,7 @@ class AttentionPool2d(nn.Module):
             bias_k=None,
             bias_v=None,
             add_zero_attn=False,
-            dropout_p=0,
+            dropout_p=0.0,
             out_proj_weight=self.c_proj.weight,
             out_proj_bias=self.c_proj.bias,
             use_separate_proj_weight=True,
