@@ -1,0 +1,10 @@
+{
+    "summary": "Imports all functions and classes from the \"clip\" module.",
+    "details": [
+        {
+            "comment": "Imports all functions and classes from the \"clip\" module.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/clip/__init__.py\":0-0",
+            "content": "from .clip import *"
+        }
+    ]
+}

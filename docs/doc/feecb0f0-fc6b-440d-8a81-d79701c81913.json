@@ -1,0 +1,10 @@
+{
+    "summary": "This code provides instructions to download and extract the Country211 dataset, a geolocation image classification dataset created from YFCC100m. The dataset contains balanced samples for training, validation, and testing for each country with corresponding ISO-3166 codes.",
+    "details": [
+        {
+            "comment": "This code provides instructions to download and extract the Country211 dataset, a geolocation image classification dataset created from YFCC100m. The dataset contains balanced samples for training, validation, and testing for each country with corresponding ISO-3166 codes.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/data/country211.md\":0-11",
+            "content": "# The Country211 Dataset\nIn the paper, we used an image classification dataset called Country211, to evaluate the model's capability on geolocation. To do so, we filtered the YFCC100m dataset that have GPS coordinate corresponding to a [ISO-3166 country code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) and created a balanced dataset by sampling 150 train images, 50 validation images, and 100 test images images for each country.\nThe following command will download an 11GB archive countaining the images and extract into a subdirectory `country211`:\n```bash\nwget https://openaipublic.azureedge.net/clip/data/country211.tgz\ntar zxvf country211.tgz\n```\nThese images are a subset of the YFCC100m dataset. Use of the underlying media files is subject to the Creative Commons licenses chosen by their creators/uploaders. For more information about the YFCC100M dataset, visit [the official website](https://multimediacommons.wordpress.com/yfcc100m-core-dataset/)."
+        }
+    ]
+}

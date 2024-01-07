@@ -1,0 +1,303 @@
+{
+    "100": {
+        "file_id": 7,
+        "content": "            nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)\n        if self.text_projection is not None:\n            nn.init.normal_(self.text_projection, std=self.transformer.width ** -0.5)\n    def build_attention_mask(self):\n        # lazily create causal attention mask, with full attention between the vision tokens\n        # pytorch uses additive attention mask; fill with -inf\n        mask = torch.empty(self.context_length, self.context_length)\n        mask.fill_(float(\"-inf\"))\n        mask.triu_(1)  # zero out the lower diagonal\n        return mask\n    @property\n    def dtype(self):\n        return self.visual.conv1.weight.dtype\n    def encode_image(self, image):\n        return self.visual(image.type(self.dtype))\n    def encode_text(self, text):\n        x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]\n        x = x + self.positional_embedding.type(self.dtype)\n        x = x.permute(1, 0, 2)  # NLD -> LND\n        x = self.transformer(x)\n        x = x.permute(1, 0, 2)  # LND -> NLD",
+        "type": "code",
+        "location": "/clip/model.py:323-349"
+    },
+    "101": {
+        "file_id": 7,
+        "content": "1. Initializes the model parameters with normal distribution.\n2. Builds a causal attention mask for the transformer, filling with -inf for lower diagonal elements.\n3. Encodes image using the provided visual encoder.\n4. Encodes text using token embedding and positional embedding followed by the transformer.\n5. Permutes the output to ensure it's in NLD format (batch_size, sequence_length, feature_dimensions).",
+        "type": "comment"
+    },
+    "102": {
+        "file_id": 7,
+        "content": "        x = self.ln_final(x).type(self.dtype)\n        # x.shape = [batch_size, n_ctx, transformer.width]\n        # take features from the eot embedding (eot_token is the highest number in each sequence)\n        x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection\n        return x\n    def forward(self, image, text):\n        image_features = self.encode_image(image)\n        text_features = self.encode_text(text)\n        # normalized features\n        image_features = image_features / image_features.norm(dim=1, keepdim=True)\n        text_features = text_features / text_features.norm(dim=1, keepdim=True)\n        # cosine similarity as logits\n        logit_scale = self.logit_scale.exp()\n        logits_per_image = logit_scale * image_features @ text_features.t()\n        logits_per_text = logits_per_image.t()\n        # shape = [global_batch_size, global_batch_size]\n        return logits_per_image, logits_per_text\ndef convert_weights(model: nn.Module):\n    \"\"\"Convert applicable model parameters to fp16\"\"\"",
+        "type": "code",
+        "location": "/clip/model.py:350-376"
+    },
+    "103": {
+        "file_id": 7,
+        "content": "\"clip/model.py\":349-375",
+        "type": "comment"
+    },
+    "104": {
+        "file_id": 7,
+        "content": "    def _convert_weights_to_fp16(l):\n        if isinstance(l, (nn.Conv1d, nn.Conv2d, nn.Linear)):\n            l.weight.data = l.weight.data.half()\n            if l.bias is not None:\n                l.bias.data = l.bias.data.half()\n        if isinstance(l, nn.MultiheadAttention):\n            for attr in [*[f\"{s}_proj_weight\" for s in [\"in\", \"q\", \"k\", \"v\"]], \"in_proj_bias\", \"bias_k\", \"bias_v\"]:\n                tensor = getattr(l, attr)\n                if tensor is not None:\n                    tensor.data = tensor.data.half()\n        for name in [\"text_projection\", \"proj\"]:\n            if hasattr(l, name):\n                attr = getattr(l, name)\n                if attr is not None:\n                    attr.data = attr.data.half()\n    model.apply(_convert_weights_to_fp16)\ndef build_model(state_dict: dict):\n    vit = \"visual.proj\" in state_dict\n    if vit:\n        vision_width = state_dict[\"visual.conv1.weight\"].shape[0]\n        vision_layers = len([k for k in state_dict.keys() if k.startswith(\"visual.\") and k.endswith(\".attn.in_proj_weight\")])",
+        "type": "code",
+        "location": "/clip/model.py:378-404"
+    },
+    "105": {
+        "file_id": 7,
+        "content": "This code applies a function to convert weights of certain layers (Conv1d, Conv2d, Linear, MultiheadAttention) from float32 to float16. It also builds a model using a state dictionary.",
+        "type": "comment"
+    },
+    "106": {
+        "file_id": 7,
+        "content": "        vision_patch_size = state_dict[\"visual.conv1.weight\"].shape[-1]\n        grid_size = round((state_dict[\"visual.positional_embedding\"].shape[0] - 1) ** 0.5)\n        image_resolution = vision_patch_size * grid_size\n    else:\n        counts: list = [len(set(k.split(\".\")[2] for k in state_dict if k.startswith(f\"visual.layer{b}\"))) for b in [1, 2, 3, 4]]\n        vision_layers = tuple(counts)\n        vision_width = state_dict[\"visual.layer1.0.conv1.weight\"].shape[0]\n        output_width = round((state_dict[\"visual.attnpool.positional_embedding\"].shape[0] - 1) ** 0.5)\n        vision_patch_size = None\n        assert output_width ** 2 + 1 == state_dict[\"visual.attnpool.positional_embedding\"].shape[0]\n        image_resolution = output_width * 32\n    embed_dim = state_dict[\"text_projection\"].shape[1]\n    context_length = state_dict[\"positional_embedding\"].shape[0]\n    vocab_size = state_dict[\"token_embedding.weight\"].shape[0]\n    transformer_width = state_dict[\"ln_final.weight\"].shape[0]\n    transformer_heads = transformer_width // 64",
+        "type": "code",
+        "location": "/clip/model.py:405-421"
+    },
+    "107": {
+        "file_id": 7,
+        "content": "Determine the vision layers' count, widths, and image resolution.\n- Determines how many vision layers exist for each layer number (1, 2, 3, 4) by counting unique keys with matching prefixes in the state dictionary.\n- If the \"visual.attnpool\" key exists, calculates the number of patches along one dimension based on the positional embedding shape and sets vision_patch_size to None. Asserts that the shape matches a specific condition.\n- Computes the image resolution by multiplying vision_patch_size with grid size (rounded down integer value of square root of positional embedding's shape[0] minus one).\n- If no \"visual.attnpool\" key exists, calculates the vision layer count and width based on keys matching prefixes in the state dictionary. Calculates output_width similarly to grid size calculation above but for the attention pooling case.\n- Sets vision_patch_size to None since it's not available from the state dictionary.\n- Finally, calculates image resolution by multiplying output_width with a fixed value (32).\n- Determines embed_dim, context_length and vocab_size based on matching keys in the state dictionary.",
+        "type": "comment"
+    },
+    "108": {
+        "file_id": 7,
+        "content": "    transformer_layers = len(set(k.split(\".\")[2] for k in state_dict if k.startswith(\"transformer.resblocks\")))\n    model = CLIP(\n        embed_dim,\n        image_resolution, vision_layers, vision_width, vision_patch_size,\n        context_length, vocab_size, transformer_width, transformer_heads, transformer_layers\n    )\n    for key in [\"input_resolution\", \"context_length\", \"vocab_size\"]:\n        if key in state_dict:\n            del state_dict[key]\n    convert_weights(model)\n    model.load_state_dict(state_dict)\n    return model.eval()",
+        "type": "code",
+        "location": "/clip/model.py:422-436"
+    },
+    "109": {
+        "file_id": 7,
+        "content": "This code initializes a CLIP model with given dimensions and layers, removes unnecessary state dict keys, converts weights, and loads the modified state dict into the model for evaluation.",
+        "type": "comment"
+    },
+    "110": {
+        "file_id": 8,
+        "content": "/clip/simple_tokenizer.py",
+        "type": "filepath"
+    },
+    "111": {
+        "file_id": 8,
+        "content": "The code defines a `SimpleTokenizer` class that uses Byte Pair Encoding (BPE) for text tokenization, cleans text data, and provides encode and decode functions. It iterates through word characters to form new words by identifying bigrams and breaks when only one character remains.",
+        "type": "summary"
+    },
+    "112": {
+        "file_id": 8,
+        "content": "import gzip\nimport html\nimport os\nfrom functools import lru_cache\nimport ftfy\nimport regex as re\n@lru_cache()\ndef default_bpe():\n    return os.path.join(os.path.dirname(os.path.abspath(__file__)), \"bpe_simple_vocab_16e6.txt.gz\")\n@lru_cache()\ndef bytes_to_unicode():\n    \"\"\"\n    Returns list of utf-8 byte and a corresponding list of unicode strings.\n    The reversible bpe codes work on unicode strings.\n    This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.\n    When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.\n    This is a signficant percentage of your normal, say, 32K bpe vocab.\n    To avoid that, we want lookup tables between utf-8 bytes and unicode strings.\n    And avoids mapping to whitespace/control characters the bpe code barfs on.\n    \"\"\"\n    bs = list(range(ord(\"!\"), ord(\"~\")+1))+list(range(ord(\"¡\"), ord(\"¬\")+1))+list(range(ord(\"®\"), ord(\"ÿ\")+1))\n    cs = bs[:]\n    n = 0\n    for b in range(2**8):\n        if b not in bs:",
+        "type": "code",
+        "location": "/clip/simple_tokenizer.py:1-30"
+    },
+    "113": {
+        "file_id": 8,
+        "content": "This code defines two functions: `default_bpe()` and `bytes_to_unicode()`. The `default_bpe()` function returns the path to the \"bpe_simple_vocab_16e6.txt.gz\" file, which seems to be a byte-pair encoding (BPE) vocabulary file. The `bytes_to_unicode()` function creates two lists - one containing Unicode characters from \"!\" to \"~\", and another containing characters from \"¡\" to \"¬\" and \"®\" to \"ÿ\". It then iterates through all 256 possible byte values, checking if they are not in the defined character ranges. If a value is not found in these ranges, it adds it to both lists. The function aims to create lookup tables between utf-8 bytes and Unicode strings for efficient BPE encoding.",
+        "type": "comment"
+    },
+    "114": {
+        "file_id": 8,
+        "content": "            bs.append(b)\n            cs.append(2**8+n)\n            n += 1\n    cs = [chr(n) for n in cs]\n    return dict(zip(bs, cs))\ndef get_pairs(word):\n    \"\"\"Return set of symbol pairs in a word.\n    Word is represented as tuple of symbols (symbols being variable-length strings).\n    \"\"\"\n    pairs = set()\n    prev_char = word[0]\n    for char in word[1:]:\n        pairs.add((prev_char, char))\n        prev_char = char\n    return pairs\ndef basic_clean(text):\n    text = ftfy.fix_text(text)\n    text = html.unescape(html.unescape(text))\n    return text.strip()\ndef whitespace_clean(text):\n    text = re.sub(r'\\s+', ' ', text)\n    text = text.strip()\n    return text\nclass SimpleTokenizer(object):\n    def __init__(self, bpe_path: str = default_bpe()):\n        self.byte_encoder = bytes_to_unicode()\n        self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}\n        merges = gzip.open(bpe_path).read().decode(\"utf-8\").split('\\n')\n        merges = merges[1:49152-256-2+1]\n        merges = [tuple(merge.split()) for merge in merges]",
+        "type": "code",
+        "location": "/clip/simple_tokenizer.py:31-68"
+    },
+    "115": {
+        "file_id": 8,
+        "content": "This code defines a class `SimpleTokenizer` that performs text tokenization using Byte Pair Encoding (BPE). It also includes functions for cleaning text data, such as removing special characters, fixing text, and handling whitespace.",
+        "type": "comment"
+    },
+    "116": {
+        "file_id": 8,
+        "content": "        vocab = list(bytes_to_unicode().values())\n        vocab = vocab + [v+'</w>' for v in vocab]\n        for merge in merges:\n            vocab.append(''.join(merge))\n        vocab.extend(['<|startoftext|>', '<|endoftext|>'])\n        self.encoder = dict(zip(vocab, range(len(vocab))))\n        self.decoder = {v: k for k, v in self.encoder.items()}\n        self.bpe_ranks = dict(zip(merges, range(len(merges))))\n        self.cache = {'<|startoftext|>': '<|startoftext|>', '<|endoftext|>': '<|endoftext|>'}\n        self.pat = re.compile(r\"\"\"<\\|startoftext\\|>|<\\|endoftext\\|>|'s|'t|'re|'ve|'m|'ll|'d|[\\p{L}]+|[\\p{N}]|[^\\s\\p{L}\\p{N}]+\"\"\", re.IGNORECASE)\n    def bpe(self, token):\n        if token in self.cache:\n            return self.cache[token]\n        word = tuple(token[:-1]) + ( token[-1] + '</w>',)\n        pairs = get_pairs(word)\n        if not pairs:\n            return token+'</w>'\n        while True:\n            bigram = min(pairs, key = lambda pair: self.bpe_ranks.get(pair, float('inf')))\n            if bigram not in self.bpe_ranks:",
+        "type": "code",
+        "location": "/clip/simple_tokenizer.py:69-91"
+    },
+    "117": {
+        "file_id": 8,
+        "content": "This code defines a class for tokenizing text using Byte Pair Encoding (BPE). It creates the vocabulary, encoder and decoder dictionaries, initializes BPE ranks and cache. The bpe method takes a token, checks if it's in the cache, and if not, applies BPE until it reaches a single character or an existing BPE word.",
+        "type": "comment"
+    },
+    "118": {
+        "file_id": 8,
+        "content": "                break\n            first, second = bigram\n            new_word = []\n            i = 0\n            while i < len(word):\n                try:\n                    j = word.index(first, i)\n                    new_word.extend(word[i:j])\n                    i = j\n                except:\n                    new_word.extend(word[i:])\n                    break\n                if word[i] == first and i < len(word)-1 and word[i+1] == second:\n                    new_word.append(first+second)\n                    i += 2\n                else:\n                    new_word.append(word[i])\n                    i += 1\n            new_word = tuple(new_word)\n            word = new_word\n            if len(word) == 1:\n                break\n            else:\n                pairs = get_pairs(word)\n        word = ' '.join(word)\n        self.cache[token] = word\n        return word\n    def encode(self, text):\n        bpe_tokens = []\n        text = whitespace_clean(basic_clean(text)).lower()\n        for token in re.findall(self.pat, text):",
+        "type": "code",
+        "location": "/clip/simple_tokenizer.py:92-124"
+    },
+    "119": {
+        "file_id": 8,
+        "content": "Iterates through word characters and forms a new word by identifying bigrams (pairs of consecutive characters), joining single characters, and breaking when only one character remains. Stores the result in self.cache after converting it to a string.",
+        "type": "comment"
+    },
+    "120": {
+        "file_id": 8,
+        "content": "            token = ''.join(self.byte_encoder[b] for b in token.encode('utf-8'))\n            bpe_tokens.extend(self.encoder[bpe_token] for bpe_token in self.bpe(token).split(' '))\n        return bpe_tokens\n    def decode(self, tokens):\n        text = ''.join([self.decoder[token] for token in tokens])\n        text = bytearray([self.byte_decoder[c] for c in text]).decode('utf-8', errors=\"replace\").replace('</w>', ' ')\n        return text",
+        "type": "code",
+        "location": "/clip/simple_tokenizer.py:125-132"
+    },
+    "121": {
+        "file_id": 8,
+        "content": "This code defines a class for tokenization using byte encoding, BPE (Byte Pair Encoding), and provides decode function. It encodes a token into its byte representation, splits it with BPE, and stores the resulting tokens in bpe_tokens list. The decode method reconstructs the original text from the token list using the decoder mapping.",
+        "type": "comment"
+    },
+    "122": {
+        "file_id": 9,
+        "content": "/data/country211.md",
+        "type": "filepath"
+    },
+    "123": {
+        "file_id": 9,
+        "content": "This code provides instructions to download and extract the Country211 dataset, a geolocation image classification dataset created from YFCC100m. The dataset contains balanced samples for training, validation, and testing for each country with corresponding ISO-3166 codes.",
+        "type": "summary"
+    },
+    "124": {
+        "file_id": 9,
+        "content": "# The Country211 Dataset\nIn the paper, we used an image classification dataset called Country211, to evaluate the model's capability on geolocation. To do so, we filtered the YFCC100m dataset that have GPS coordinate corresponding to a [ISO-3166 country code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) and created a balanced dataset by sampling 150 train images, 50 validation images, and 100 test images images for each country.\nThe following command will download an 11GB archive countaining the images and extract into a subdirectory `country211`:\n```bash\nwget https://openaipublic.azureedge.net/clip/data/country211.tgz\ntar zxvf country211.tgz\n```\nThese images are a subset of the YFCC100m dataset. Use of the underlying media files is subject to the Creative Commons licenses chosen by their creators/uploaders. For more information about the YFCC100M dataset, visit [the official website](https://multimediacommons.wordpress.com/yfcc100m-core-dataset/).",
+        "type": "code",
+        "location": "/data/country211.md:1-12"
+    },
+    "125": {
+        "file_id": 9,
+        "content": "This code provides instructions to download and extract the Country211 dataset, a geolocation image classification dataset created from YFCC100m. The dataset contains balanced samples for training, validation, and testing for each country with corresponding ISO-3166 codes.",
+        "type": "comment"
+    },
+    "126": {
+        "file_id": 10,
+        "content": "/data/rendered-sst2.md",
+        "type": "filepath"
+    },
+    "127": {
+        "file_id": 10,
+        "content": "This code explains that the Rendered SST2 dataset was used in a paper for image classification. It provides instructions to download and extract the dataset using a command.",
+        "type": "summary"
+    },
+    "128": {
+        "file_id": 10,
+        "content": "# The Rendered SST2 Dataset\nIn the paper, we used an image classification dataset called Rendered SST2, to evaluate the model's capability on optical character recognition. To do so, we rendered the sentences in the [Standford Sentiment Treebank v2](https://nlp.stanford.edu/sentiment/treebank.html) dataset and used those as the input to the CLIP image encoder.\nThe following command will download a 131MB archive countaining the images and extract into a subdirectory `rendered-sst2`:\n```bash\nwget https://openaipublic.azureedge.net/clip/data/rendered-sst2.tgz\ntar zxvf rendered-sst2.tgz\n```",
+        "type": "code",
+        "location": "/data/rendered-sst2.md:1-10"
+    },
+    "129": {
+        "file_id": 10,
+        "content": "This code explains that the Rendered SST2 dataset was used in a paper for image classification. It provides instructions to download and extract the dataset using a command.",
+        "type": "comment"
+    },
+    "130": {
+        "file_id": 11,
+        "content": "/data/yfcc100m.md",
+        "type": "filepath"
+    },
+    "131": {
+        "file_id": 11,
+        "content": "This code is downloading and decompressing a subset of the YFCC100M dataset, which contains 14,829,396 images with English language titles and/or descriptions. The dataset's usage follows Creative Commons licenses chosen by creators/uploaders.",
+        "type": "summary"
+    },
+    "132": {
+        "file_id": 11,
+        "content": "# The YFCC100M Subset\nIn the paper, we performed a dataset ablation using a subset of the YFCC100M dataset and showed that the performance remained largely similar. \nThe subset contains 14,829,396 images, about 15% of the full dataset, which have been filtered to only keep those with natural languag titles and/or descriptions in English.\nWe provide the list of (line number, photo identifier, photo hash) of each image contained in this subset. These correspond to the first three columns in the dataset's metadata TSV file.\n```bash\nwget https://openaipublic.azureedge.net/clip/data/yfcc100m_subset_data.tsv.bz2\nbunzip2 yfcc100m_subset_data.tsv.bz2\n```\nUse of the underlying media files is subject to the Creative Commons licenses chosen by their creators/uploaders. For more information about the YFCC100M dataset, visit [the official website](https://multimediacommons.wordpress.com/yfcc100m-core-dataset/).",
+        "type": "code",
+        "location": "/data/yfcc100m.md:1-14"
+    },
+    "133": {
+        "file_id": 11,
+        "content": "This code is downloading and decompressing a subset of the YFCC100M dataset, which contains 14,829,396 images with English language titles and/or descriptions. The dataset's usage follows Creative Commons licenses chosen by creators/uploaders.",
+        "type": "comment"
+    },
+    "134": {
+        "file_id": 12,
+        "content": "/notebooks/Interacting_with_CLIP.py",
+        "type": "filepath"
+    },
+    "135": {
+        "file_id": 12,
+        "content": "The code imports libraries, prepares CLIP model and image datasets, calculates text-image similarity using CIFAR-100 dataset, and visualizes the relationship in a heatmap.",
+        "type": "summary"
+    },
+    "136": {
+        "file_id": 12,
+        "content": "#! pip install ftfy regex tqdm\n#! pip install git+https://github.com/openai/CLIP.git\nimport numpy as np\nimport torch\nfrom pkg_resources import packaging\nprint(\"Torch version:\", torch.__version__)\nimport clip\nclip.available_models()\nmodel, preprocess = clip.load(\"ViT-B/32\")\nmodel.cuda().eval()\ninput_resolution = model.visual.input_resolution\ncontext_length = model.context_length\nvocab_size = model.vocab_size\nprint(\"Model parameters:\", f\"{np.sum([int(np.prod(p.shape)) for p in model.parameters()]):,}\")\nprint(\"Input resolution:\", input_resolution)\nprint(\"Context length:\", context_length)\nprint(\"Vocab size:\", vocab_size)\npreprocess\nclip.tokenize(\"Hello World!\")\nimport os\nimport skimage\nimport IPython.display\nimport matplotlib.pyplot as plt\nfrom PIL import Image\nimport numpy as np\nfrom collections import OrderedDict\nimport torch\n%matplotlib inline\n%config InlineBackend.figure_format = 'retina'\n# images in skimage to use and their textual descriptions\ndescriptions = {\n    \"page\": \"a page of text about segmentation\",\n    \"chelsea\": \"a facial photo of a tabby cat\",",
+        "type": "code",
+        "location": "/notebooks/Interacting_with_CLIP.py:1-46"
+    },
+    "137": {
+        "file_id": 12,
+        "content": "The code imports necessary libraries, checks the installed versions of PyTorch and CLIP, loads a pre-trained CLIP model with specified parameters, and defines some variables including image resolution, context length, and vocabulary size. It also displays the total number of model parameters and shows how to tokenize text using CLIP's tokenizer. The code then imports necessary libraries for image processing and visualization like skimage, IPython.display, matplotlib.pyplot, PIL, numpy, and torch. Finally, it defines a dictionary with image names as keys and their corresponding descriptions as values.",
+        "type": "comment"
+    },
+    "138": {
+        "file_id": 12,
+        "content": "    \"astronaut\": \"a portrait of an astronaut with the American flag\",\n    \"rocket\": \"a rocket standing on a launchpad\",\n    \"motorcycle_right\": \"a red motorcycle standing in a garage\",\n    \"camera\": \"a person looking at a camera on a tripod\",\n    \"horse\": \"a black-and-white silhouette of a horse\", \n    \"coffee\": \"a cup of coffee on a saucer\"\n}\noriginal_images = []\nimages = []\ntexts = []\nplt.figure(figsize=(16, 5))\nfor filename in [filename for filename in os.listdir(skimage.data_dir) if filename.endswith(\".png\") or filename.endswith(\".jpg\")]:\n    name = os.path.splitext(filename)[0]\n    if name not in descriptions:\n        continue\n    image = Image.open(os.path.join(skimage.data_dir, filename)).convert(\"RGB\")\n    plt.subplot(2, 4, len(images) + 1)\n    plt.imshow(image)\n    plt.title(f\"{filename}\\n{descriptions[name]}\")\n    plt.xticks([])\n    plt.yticks([])\n    original_images.append(image)\n    images.append(preprocess(image))\n    texts.append(descriptions[name])\nplt.tight_layout()\nimage_input = torch.tensor(np.stack(images)).cuda()",
+        "type": "code",
+        "location": "/notebooks/Interacting_with_CLIP.py:47-80"
+    },
+    "139": {
+        "file_id": 12,
+        "content": "This code is preparing a dataset of images and corresponding descriptions for CLIP. It reads image files from the specified directory, selects relevant images based on provided descriptions, preprocesses them, and stores in lists. The images are then displayed as a grid with titles showing their names and descriptions. Finally, the preprocessed images are converted to torch tensor for use with CLIP.",
+        "type": "comment"
+    },
+    "140": {
+        "file_id": 12,
+        "content": "text_tokens = clip.tokenize([\"This is \" + desc for desc in texts]).cuda()\nwith torch.no_grad():\n    image_features = model.encode_image(image_input).float()\n    text_features = model.encode_text(text_tokens).float()\nimage_features /= image_features.norm(dim=-1, keepdim=True)\ntext_features /= text_features.norm(dim=-1, keepdim=True)\nsimilarity = text_features.cpu().numpy() @ image_features.cpu().numpy().T\ncount = len(descriptions)\nplt.figure(figsize=(20, 14))\nplt.imshow(similarity, vmin=0.1, vmax=0.3)\n# plt.colorbar()\nplt.yticks(range(count), texts, fontsize=18)\nplt.xticks([])\nfor i, image in enumerate(original_images):\n    plt.imshow(image, extent=(i - 0.5, i + 0.5, -1.6, -0.6), origin=\"lower\")\nfor x in range(similarity.shape[1]):\n    for y in range(similarity.shape[0]):\n        plt.text(x, y, f\"{similarity[y, x]:.2f}\", ha=\"center\", va=\"center\", size=12)\nfor side in [\"left\", \"top\", \"right\", \"bottom\"]:\n  plt.gca().spines[side].set_visible(False)\nplt.xlim([-0.5, count - 0.5])\nplt.ylim([count + 0.5, -2])\nplt.title(\"Cosine similarity between text and image features\", size=20)",
+        "type": "code",
+        "location": "/notebooks/Interacting_with_CLIP.py:81-110"
+    },
+    "141": {
+        "file_id": 12,
+        "content": "Code chunk normalizes text and image features, calculates cosine similarity between them, and plots a heatmap to visualize the relationship.",
+        "type": "comment"
+    },
+    "142": {
+        "file_id": 12,
+        "content": "from torchvision.datasets import CIFAR100\ncifar100 = CIFAR100(os.path.expanduser(\"~/.cache\"), transform=preprocess, download=True)\ntext_descriptions = [f\"This is a photo of a {label}\" for label in cifar100.classes]\ntext_tokens = clip.tokenize(text_descriptions).cuda()\nwith torch.no_grad():\n    text_features = model.encode_text(text_tokens).float()\n    text_features /= text_features.norm(dim=-1, keepdim=True)\ntext_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)\ntop_probs, top_labels = text_probs.cpu().topk(5, dim=-1)\nplt.figure(figsize=(16, 16))\nfor i, image in enumerate(original_images):\n    plt.subplot(4, 4, 2 * i + 1)\n    plt.imshow(image)\n    plt.axis(\"off\")\n    plt.subplot(4, 4, 2 * i + 2)\n    y = np.arange(top_probs.shape[-1])\n    plt.grid()\n    plt.barh(y, top_probs[i])\n    plt.gca().invert_yaxis()\n    plt.gca().set_axisbelow(True)\n    plt.yticks(y, [cifar100.classes[index] for index in top_labels[i].numpy()])\n    plt.xlabel(\"probability\")\nplt.subplots_adjust(wspace=0.5)\nplt.show()",
+        "type": "code",
+        "location": "/notebooks/Interacting_with_CLIP.py:112-143"
+    },
+    "143": {
+        "file_id": 12,
+        "content": "This code is loading the CIFAR-100 dataset, extracting image features and text descriptions from it, then calculating the similarity between image features and text features. The results are displayed in a visualization showing the top 5 most probable labels for each image.",
+        "type": "comment"
+    },
+    "144": {
+        "file_id": 13,
+        "content": "/notebooks/Prompt_Engineering_for_ImageNet.py",
+        "type": "filepath"
+    },
+    "145": {
+        "file_id": 13,
+        "content": "The code installs libraries, loads the CLIP model, and processes a dataset before performing zero-shot classification and calculating top-1/top-5 accuracy on ImageNet dataset.",
+        "type": "summary"
+    },
+    "146": {
+        "file_id": 13,
+        "content": "#! pip install ftfy regex tqdm\n#! pip install git+https://github.com/openai/CLIP.git\nimport numpy as np\nimport torch\nimport clip\nfrom tqdm.notebook import tqdm\nfrom pkg_resources import packaging\nprint(\"Torch version:\", torch.__version__)\nclip.available_models()\nmodel, preprocess = clip.load(\"ViT-B/32\")\ninput_resolution = model.visual.input_resolution\ncontext_length = model.context_length\nvocab_size = model.vocab_size\nprint(\"Model parameters:\", f\"{np.sum([int(np.prod(p.shape)) for p in model.parameters()]):,}\")\nprint(\"Input resolution:\", input_resolution)\nprint(\"Context length:\", context_length)\nprint(\"Vocab size:\", vocab_size)\nimport json\nimagenet_data = json.loads(open(\"imagenet_data.json\",\"r\").read())\nimagenet_classes = imagenet_data['imagenet_classes']\nimagenet_templates = imagenet_data['imagenet_templates']\nprint(f\"{len(imagenet_classes)} classes, {len(imagenet_templates)} templates\")\n# execute:\n# ! pip install git+https://github.com/modestyachts/ImageNetV2_pytorch\nfrom imagenetv2_pytorch import ImageNetV2Dataset",
+        "type": "code",
+        "location": "/notebooks/Prompt_Engineering_for_ImageNet.py:1-36"
+    },
+    "147": {
+        "file_id": 13,
+        "content": "This code installs required libraries, loads OpenAI's CLIP model, and retrieves Imagenet classes and templates. It also imports the ImageNetV2Dataset from a specific repository.",
+        "type": "comment"
+    },
+    "148": {
+        "file_id": 13,
+        "content": "images = ImageNetV2Dataset(transform=preprocess)\nloader = torch.utils.data.DataLoader(images, batch_size=32, num_workers=2)\ndef zeroshot_classifier(classnames, templates):\n    with torch.no_grad():\n        zeroshot_weights = []\n        for classname in tqdm(classnames):\n            texts = [template.format(classname) for template in templates] #format with class\n            texts = clip.tokenize(texts).cuda() #tokenize\n            class_embeddings = model.encode_text(texts) #embed with text encoder\n            class_embeddings /= class_embeddings.norm(dim=-1, keepdim=True)\n            class_embedding = class_embeddings.mean(dim=0)\n            class_embedding /= class_embedding.norm()\n            zeroshot_weights.append(class_embedding)\n        zeroshot_weights = torch.stack(zeroshot_weights, dim=1).cuda()\n    return zeroshot_weights\nzeroshot_weights = zeroshot_classifier(imagenet_classes, imagenet_templates)\ndef accuracy(output, target, topk=(1,)):\n    pred = output.topk(max(topk), 1, True, True)[1].t()",
+        "type": "code",
+        "location": "/notebooks/Prompt_Engineering_for_ImageNet.py:38-59"
+    },
+    "149": {
+        "file_id": 13,
+        "content": "Code snippet performs zero-shot classification for the ImageNet dataset. It generates embeddings for given class names using text templates, averages them and stores in zeroshot_weights. The accuracy function calculates accuracy based on the output and target values.",
+        "type": "comment"
+    },
+    "150": {
+        "file_id": 13,
+        "content": "    correct = pred.eq(target.view(1, -1).expand_as(pred))\n    return [float(correct[:k].reshape(-1).float().sum(0, keepdim=True).cpu().numpy()) for k in topk]\nwith torch.no_grad():\n    top1, top5, n = 0., 0., 0.\n    for i, (images, target) in enumerate(tqdm(loader)):\n        images = images.cuda()\n        target = target.cuda()\n        # predict\n        image_features = model.encode_image(images)\n        image_features /= image_features.norm(dim=-1, keepdim=True)\n        logits = 100. * image_features @ zeroshot_weights\n        # measure accuracy\n        acc1, acc5 = accuracy(logits, target, topk=(1, 5))\n        top1 += acc1\n        top5 += acc5\n        n += images.size(0)\ntop1 = (top1 / n) * 100\ntop5 = (top5 / n) * 100 \nprint(f\"Top-1 accuracy: {top1:.2f}\")\nprint(f\"Top-5 accuracy: {top5:.2f}\")",
+        "type": "code",
+        "location": "/notebooks/Prompt_Engineering_for_ImageNet.py:60-84"
+    },
+    "151": {
+        "file_id": 13,
+        "content": "The code calculates the top-1 and top-5 accuracy of a model's predictions on ImageNet dataset. It computes the accuracy by comparing predicted probabilities with ground truth labels, averages them over all images in the batch, and prints the results.",
+        "type": "comment"
+    },
+    "152": {
+        "file_id": 14,
+        "content": "/tests/test_consistency.py",
+        "type": "filepath"
+    },
+    "153": {
+        "file_id": 14,
+        "content": "Testing consistency between JIT and non-JIT versions of CLIP model.",
+        "type": "summary"
+    },
+    "154": {
+        "file_id": 14,
+        "content": "import numpy as np\nimport pytest\nimport torch\nfrom PIL import Image\nimport clip\n@pytest.mark.parametrize('model_name', clip.available_models())\ndef test_consistency(model_name):\n    device = \"cpu\"\n    jit_model, transform = clip.load(model_name, device=device, jit=True)\n    py_model, _ = clip.load(model_name, device=device, jit=False)\n    image = transform(Image.open(\"CLIP.png\")).unsqueeze(0).to(device)\n    text = clip.tokenize([\"a diagram\", \"a dog\", \"a cat\"]).to(device)\n    with torch.no_grad():\n        logits_per_image, _ = jit_model(image, text)\n        jit_probs = logits_per_image.softmax(dim=-1).cpu().numpy()\n        logits_per_image, _ = py_model(image, text)\n        py_probs = logits_per_image.softmax(dim=-1).cpu().numpy()\n    assert np.allclose(jit_probs, py_probs, atol=0.01, rtol=0.1)",
+        "type": "code",
+        "location": "/tests/test_consistency.py:1-25"
+    },
+    "155": {
+        "file_id": 14,
+        "content": "Testing consistency between JIT and non-JIT versions of CLIP model.",
+        "type": "comment"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "This code sets up a Python package named \"clip\" using setuptools. It imports necessary modules, defines package attributes and requirements, and specifies installation dependencies. It also includes the \"dev\" extra requirement for developers.",
+    "details": [
+        {
+            "comment": "This code sets up a Python package named \"clip\" using setuptools. It imports necessary modules, defines package attributes and requirements, and specifies installation dependencies. It also includes the \"dev\" extra requirement for developers.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/setup.py\":0-20",
+            "content": "import os\nimport pkg_resources\nfrom setuptools import setup, find_packages\nsetup(\n    name=\"clip\",\n    py_modules=[\"clip\"],\n    version=\"1.0\",\n    description=\"\",\n    author=\"OpenAI\",\n    packages=find_packages(exclude=[\"tests*\"]),\n    install_requires=[\n        str(r)\n        for r in pkg_resources.parse_requirements(\n            open(os.path.join(os.path.dirname(__file__), \"requirements.txt\"))\n        )\n    ],\n    include_package_data=True,\n    extras_require={'dev': ['pytest']},\n)"
+        }
+    ]
+}

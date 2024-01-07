@@ -1,0 +1,15 @@
+{
+    "summary": "This code defines functions for creating entry points to load CLIP models and converting PIL images into tensors, while also mapping model names and updating the global namespace with different model entrypoints.",
+    "details": [
+        {
+            "comment": "This code defines a function _create_hub_entrypoint that creates an entry point for loading CLIP models. It also imports necessary dependencies and maps available model names to remove any special characters for compatibility.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/hubconf.py\":0-31",
+            "content": "from clip.clip import tokenize as _tokenize, load as _load, available_models as _available_models\nimport re\nimport string\ndependencies = [\"torch\", \"torchvision\", \"ftfy\", \"regex\", \"tqdm\"]\n# For compatibility (cannot include special characters in function name)\nmodel_functions = { model: re.sub(f'[{string.punctuation}]', '_', model) for model in _available_models()}\ndef _create_hub_entrypoint(model):\n    def entrypoint(**kwargs):      \n        return _load(model, **kwargs)\n    entrypoint.__doc__ = f\"\"\"Loads the {model} CLIP model\n        Parameters\n        ----------\n        device : Union[str, torch.device]\n            The device to put the loaded model\n        jit : bool\n            Whether to load the optimized JIT model or more hackable non-JIT model (default).\n        download_root: str\n            path to download the model files; by default, it uses \"~/.cache/clip\"\n        Returns\n        -------\n        model : torch.nn.Module\n            The {model} CLIP model\n        preprocess : Callable[[PIL.Image], torch.Tensor]"
+        },
+        {
+            "comment": "This code defines a function that converts a PIL image into a tensor. It also creates entrypoints for different models using _available_models() and updates the global namespace with these entrypoints.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/hubconf.py\":32-41",
+            "content": "            A torchvision transform that converts a PIL image into a tensor that the returned model can take as its input\n        \"\"\"\n    return entrypoint\ndef tokenize():\n    return _tokenize\n_entrypoints = {model_functions[model]: _create_hub_entrypoint(model) for model in _available_models()}\nglobals().update(_entrypoints)"
+        }
+    ]
+}

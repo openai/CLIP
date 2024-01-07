@@ -1,0 +1,10 @@
+{
+    "summary": "Testing consistency between JIT and non-JIT versions of CLIP model.",
+    "details": [
+        {
+            "comment": "Testing consistency between JIT and non-JIT versions of CLIP model.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/tests/test_consistency.py\":0-24",
+            "content": "import numpy as np\nimport pytest\nimport torch\nfrom PIL import Image\nimport clip\n@pytest.mark.parametrize('model_name', clip.available_models())\ndef test_consistency(model_name):\n    device = \"cpu\"\n    jit_model, transform = clip.load(model_name, device=device, jit=True)\n    py_model, _ = clip.load(model_name, device=device, jit=False)\n    image = transform(Image.open(\"CLIP.png\")).unsqueeze(0).to(device)\n    text = clip.tokenize([\"a diagram\", \"a dog\", \"a cat\"]).to(device)\n    with torch.no_grad():\n        logits_per_image, _ = jit_model(image, text)\n        jit_probs = logits_per_image.softmax(dim=-1).cpu().numpy()\n        logits_per_image, _ = py_model(image, text)\n        py_probs = logits_per_image.softmax(dim=-1).cpu().numpy()\n    assert np.allclose(jit_probs, py_probs, atol=0.01, rtol=0.1)"
+        }
+    ]
+}

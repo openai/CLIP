@@ -1,0 +1,10 @@
+{
+    "summary": "This code is downloading and decompressing a subset of the YFCC100M dataset, which contains 14,829,396 images with English language titles and/or descriptions. The dataset's usage follows Creative Commons licenses chosen by creators/uploaders.",
+    "details": [
+        {
+            "comment": "This code is downloading and decompressing a subset of the YFCC100M dataset, which contains 14,829,396 images with English language titles and/or descriptions. The dataset's usage follows Creative Commons licenses chosen by creators/uploaders.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/data/yfcc100m.md\":0-13",
+            "content": "# The YFCC100M Subset\nIn the paper, we performed a dataset ablation using a subset of the YFCC100M dataset and showed that the performance remained largely similar. \nThe subset contains 14,829,396 images, about 15% of the full dataset, which have been filtered to only keep those with natural languag titles and/or descriptions in English.\nWe provide the list of (line number, photo identifier, photo hash) of each image contained in this subset. These correspond to the first three columns in the dataset's metadata TSV file.\n```bash\nwget https://openaipublic.azureedge.net/clip/data/yfcc100m_subset_data.tsv.bz2\nbunzip2 yfcc100m_subset_data.tsv.bz2\n```\nUse of the underlying media files is subject to the Creative Commons licenses chosen by their creators/uploaders. For more information about the YFCC100M dataset, visit [the official website](https://multimediacommons.wordpress.com/yfcc100m-core-dataset/)."
+        }
+    ]
+}

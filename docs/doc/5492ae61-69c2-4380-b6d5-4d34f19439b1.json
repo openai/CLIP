@@ -1,0 +1,10 @@
+{
+    "summary": "Installing required packages: ftfy, regex, tqdm, torch, and torchvision.",
+    "details": [
+        {
+            "comment": "Installing required packages: ftfy, regex, tqdm, torch, and torchvision.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/requirements.txt\":0-4",
+            "content": "ftfy\nregex\ntqdm\ntorch\ntorchvision"
+        }
+    ]
+}

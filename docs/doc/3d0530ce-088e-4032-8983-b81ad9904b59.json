@@ -1,0 +1,10 @@
+{
+    "summary": "This code explains that the Rendered SST2 dataset was used in a paper for image classification. It provides instructions to download and extract the dataset using a command.",
+    "details": [
+        {
+            "comment": "This code explains that the Rendered SST2 dataset was used in a paper for image classification. It provides instructions to download and extract the dataset using a command.",
+            "location": "\"/media/root/Toshiba XG3/works/CLIP/docs/src/data/rendered-sst2.md\":0-9",
+            "content": "# The Rendered SST2 Dataset\nIn the paper, we used an image classification dataset called Rendered SST2, to evaluate the model's capability on optical character recognition. To do so, we rendered the sentences in the [Standford Sentiment Treebank v2](https://nlp.stanford.edu/sentiment/treebank.html) dataset and used those as the input to the CLIP image encoder.\nThe following command will download a 131MB archive countaining the images and extract into a subdirectory `rendered-sst2`:\n```bash\nwget https://openaipublic.azureedge.net/clip/data/rendered-sst2.tgz\ntar zxvf rendered-sst2.tgz\n```"
+        }
+    ]
+}

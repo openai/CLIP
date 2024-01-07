@@ -1,0 +1,85 @@
+{
+    "url": {
+        "full": "https://github.com/james4ever0/CLIP",
+        "partial": "james4ever0/CLIP"
+    },
+    "file_mapping": {
+        "0": {
+            "filepath": "/README.md",
+            "entry_id": 0,
+            "language_id": "plain-text"
+        },
+        "1": {
+            "filepath": "/hubconf.py",
+            "entry_id": 16,
+            "language_id": "python"
+        },
+        "2": {
+            "filepath": "/model-card.md",
+            "entry_id": 22,
+            "language_id": "markdown"
+        },
+        "3": {
+            "filepath": "/requirements.txt",
+            "entry_id": 40,
+            "language_id": "plain-text"
+        },
+        "4": {
+            "filepath": "/setup.py",
+            "entry_id": 44,
+            "language_id": "python"
+        },
+        "5": {
+            "filepath": "/clip/__init__.py",
+            "entry_id": 48,
+            "language_id": "python"
+        },
+        "6": {
+            "filepath": "/clip/clip.py",
+            "entry_id": 52,
+            "language_id": "python"
+        },
+        "7": {
+            "filepath": "/clip/model.py",
+            "entry_id": 74,
+            "language_id": "python"
+        },
+        "8": {
+            "filepath": "/clip/simple_tokenizer.py",
+            "entry_id": 110,
+            "language_id": "python"
+        },
+        "9": {
+            "filepath": "/data/country211.md",
+            "entry_id": 122,
+            "language_id": "markdown"
+        },
+        "10": {
+            "filepath": "/data/rendered-sst2.md",
+            "entry_id": 126,
+            "language_id": "markdown"
+        },
+        "11": {
+            "filepath": "/data/yfcc100m.md",
+            "entry_id": 130,
+            "language_id": "markdown"
+        },
+        "12": {
+            "filepath": "/notebooks/Interacting_with_CLIP.py",
+            "entry_id": 134,
+            "language_id": "python"
+        },
+        "13": {
+            "filepath": "/notebooks/Prompt_Engineering_for_ImageNet.py",
+            "entry_id": 144,
+            "language_id": "python"
+        },
+        "14": {
+            "filepath": "/tests/test_consistency.py",
+            "entry_id": 152,
+            "language_id": "python"
+        }
+    },
+    "project_name": "CLIP",
+    "split_count": 2
+}

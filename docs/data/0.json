@@ -1,0 +1,544 @@
+{
+    "0": {
+        "file_id": 0,
+        "content": "/README.md",
+        "type": "filepath"
+    },
+    "1": {
+        "file_id": 0,
+        "content": "Both comments discuss using CLIP, a pre-trained model, for image and text feature extraction. Comment A focuses on CIFAR100 feature extraction and similarity computation, while Comment B covers logistic regression implementation, hyperparameter tuning, and utilizes OpenCLIP and Hugging Face CLIP implementations.",
+        "type": "summary"
+    },
+    "2": {
+        "file_id": 0,
+        "content": "# CLIP\n[[Blog]](https://openai.com/blog/clip/) [[Paper]](https://arxiv.org/abs/2103.00020) [[Model Card]](model-card.md) [[Colab]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)\nCLIP (Contrastive Language-Image Pre-Training) is a neural network trained on a variety of (image, text) pairs. It can be instructed in natural language to predict the most relevant text snippet, given an image, without directly optimizing for the task, similarly to the zero-shot capabilities of GPT-2 and 3. We found CLIP matches the performance of the original ResNet50 on ImageNet “zero-shot” without using any of the original 1.28M labeled examples, overcoming several major challenges in computer vision.\n## Approach\n![CLIP](CLIP.png)\n## Usage\nFirst, [install PyTorch 1.7.1](https://pytorch.org/get-started/locally/) (or later) and torchvision, as well as small additional dependencies, and then install this repo as a Python package. On a CUDA GPU machine, the following will do the trick:",
+        "type": "code",
+        "location": "/README.md:1-17"
+    },
+    "3": {
+        "file_id": 0,
+        "content": "The code provides a brief introduction to CLIP, a neural network trained on various image-text pairs. It can predict relevant text based on an image without directly optimizing for the task and matches the performance of ResNet50 on ImageNet \"zero-shot\" without using any labeled examples. The code also explains how to install necessary dependencies and set up the environment to use CLIP.",
+        "type": "comment"
+    },
+    "4": {
+        "file_id": 0,
+        "content": "```bash\n$ conda install --yes -c pytorch pytorch=1.7.1 torchvision cudatoolkit=11.0\n$ pip install ftfy regex tqdm\n$ pip install git+https://github.com/openai/CLIP.git\n```\nReplace `cudatoolkit=11.0` above with the appropriate CUDA version on your machine or `cpuonly` when installing on a machine without a GPU.\n```python\nimport torch\nimport clip\nfrom PIL import Image\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel, preprocess = clip.load(\"ViT-B/32\", device=device)\nimage = preprocess(Image.open(\"CLIP.png\")).unsqueeze(0).to(device)\ntext = clip.tokenize([\"a diagram\", \"a dog\", \"a cat\"]).to(device)\nwith torch.no_grad():\n    image_features = model.encode_image(image)\n    text_features = model.encode_text(text)\n    logits_per_image, logits_per_text = model(image, text)\n    probs = logits_per_image.softmax(dim=-1).cpu().numpy()\nprint(\"Label probs:\", probs)  # prints: [[0.9927937  0.00421068 0.00299572]]\n```\n## API\nThe CLIP module `clip` provides the following methods:\n#### `clip.available_models()`\nReturns the names of the available CLIP models.",
+        "type": "code",
+        "location": "/README.md:19-55"
+    },
+    "5": {
+        "file_id": 0,
+        "content": "Code installs necessary packages for running CLIP and loads the model.",
+        "type": "comment"
+    },
+    "6": {
+        "file_id": 0,
+        "content": "#### `clip.load(name, device=..., jit=False)`\nReturns the model and the TorchVision transform needed by the model, specified by the model name returned by `clip.available_models()`. It will download the model as necessary. The `name` argument can also be a path to a local checkpoint.\nThe device to run the model can be optionally specified, and the default is to use the first CUDA device if there is any, otherwise the CPU. When `jit` is `False`, a non-JIT version of the model will be loaded.\n#### `clip.tokenize(text: Union[str, List[str]], context_length=77)`\nReturns a LongTensor containing tokenized sequences of given text input(s). This can be used as the input to the model\n---\nThe model returned by `clip.load()` supports the following methods:\n#### `model.encode_image(image: Tensor)`\nGiven a batch of images, returns the image features encoded by the vision portion of the CLIP model.\n#### `model.encode_text(text: Tensor)`\nGiven a batch of text tokens, returns the text features encoded by the language portion of the CLIP model.",
+        "type": "code",
+        "location": "/README.md:57-77"
+    },
+    "7": {
+        "file_id": 0,
+        "content": "This code snippet is for the CLIP library, which provides a model for visual-textual similarity. It includes two primary functions: `clip.load()` and `clip.tokenize()`. The `clip.load()` function loads a pre-trained CLIP model specified by the `name` parameter or downloads it if necessary. The `clip.tokenize()` function tokenizes input text(s) and returns LongTensor containing the tokenized sequences. The loaded model also supports two methods: `model.encode_image()` to encode image features and `model.encode_text()` to encode text features.",
+        "type": "comment"
+    },
+    "8": {
+        "file_id": 0,
+        "content": "#### `model(image: Tensor, text: Tensor)`\nGiven a batch of images and a batch of text tokens, returns two Tensors, containing the logit scores corresponding to each image and text input. The values are cosine similarities between the corresponding image and text features, times 100.\n## More Examples\n### Zero-Shot Prediction\nThe code below performs zero-shot prediction using CLIP, as shown in Appendix B in the paper. This example takes an image from the [CIFAR-100 dataset](https://www.cs.toronto.edu/~kriz/cifar.html), and predicts the most likely labels among the 100 textual labels from the dataset.\n```python\nimport os\nimport clip\nimport torch\nfrom torchvision.datasets import CIFAR100\n# Load the model\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel, preprocess = clip.load('ViT-B/32', device)\n# Download the dataset\ncifar100 = CIFAR100(root=os.path.expanduser(\"~/.cache\"), download=True, train=False)\n# Prepare the inputs\nimage, class_id = cifar100[3637]\nimage_input = preprocess(image).unsqueeze(0).to(device)",
+        "type": "code",
+        "location": "/README.md:79-106"
+    },
+    "9": {
+        "file_id": 0,
+        "content": "The code snippet loads the CLIP model (ViT-B/32) and prepares inputs for zero-shot prediction using an image from the CIFAR-100 dataset.",
+        "type": "comment"
+    },
+    "10": {
+        "file_id": 0,
+        "content": "text_inputs = torch.cat([clip.tokenize(f\"a photo of a {c}\") for c in cifar100.classes]).to(device)\n# Calculate features\nwith torch.no_grad():\n    image_features = model.encode_image(image_input)\n    text_features = model.encode_text(text_inputs)\n# Pick the top 5 most similar labels for the image\nimage_features /= image_features.norm(dim=-1, keepdim=True)\ntext_features /= text_features.norm(dim=-1, keepdim=True)\nsimilarity = (100.0 * image_features @ text_features.T).softmax(dim=-1)\nvalues, indices = similarity[0].topk(5)\n# Print the result\nprint(\"\\nTop predictions:\\n\")\nfor value, index in zip(values, indices):\n    print(f\"{cifar100.classes[index]:>16s}: {100 * value.item():.2f}%\")\n```\nThe output will look like the following (the exact numbers may be slightly different depending on the compute device):\n```\nTop predictions:\n           snake: 65.31%\n          turtle: 12.29%\n    sweet_pepper: 3.83%\n          lizard: 1.88%\n       crocodile: 1.75%\n```\nNote that this example uses the `encode_image()` and `encode_text()` methods that return the encoded features of given inputs.",
+        "type": "code",
+        "location": "/README.md:107-138"
+    },
+    "11": {
+        "file_id": 0,
+        "content": "This code calculates the similarity between image features and text features using dot product and softmax, then prints the top 5 most similar labels for the given image.",
+        "type": "comment"
+    },
+    "12": {
+        "file_id": 0,
+        "content": "### Linear-probe evaluation\nThe example below uses [scikit-learn](https://scikit-learn.org/) to perform logistic regression on image features.\n```python\nimport os\nimport clip\nimport torch\nimport numpy as np\nfrom sklearn.linear_model import LogisticRegression\nfrom torch.utils.data import DataLoader\nfrom torchvision.datasets import CIFAR100\nfrom tqdm import tqdm\n# Load the model\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel, preprocess = clip.load('ViT-B/32', device)\n# Load the dataset\nroot = os.path.expanduser(\"~/.cache\")\ntrain = CIFAR100(root, download=True, train=True, transform=preprocess)\ntest = CIFAR100(root, download=True, train=False, transform=preprocess)\ndef get_features(dataset):\n    all_features = []\n    all_labels = []\n    with torch.no_grad():\n        for images, labels in tqdm(DataLoader(dataset, batch_size=100)):\n            features = model.encode_image(images.to(device))\n            all_features.append(features)\n            all_labels.append(labels)\n    return torch.cat(all_features).cpu().numpy(), torch.cat(all_labels).cpu().numpy()",
+        "type": "code",
+        "location": "/README.md:141-177"
+    },
+    "13": {
+        "file_id": 0,
+        "content": "This code loads a pre-trained CLIP model, then applies it to CIFAR100 dataset for feature extraction using logistic regression.",
+        "type": "comment"
+    },
+    "14": {
+        "file_id": 0,
+        "content": "# Calculate the image features\ntrain_features, train_labels = get_features(train)\ntest_features, test_labels = get_features(test)\n# Perform logistic regression\nclassifier = LogisticRegression(random_state=0, C=0.316, max_iter=1000, verbose=1)\nclassifier.fit(train_features, train_labels)\n# Evaluate using the logistic regression classifier\npredictions = classifier.predict(test_features)\naccuracy = np.mean((test_labels == predictions).astype(float)) * 100.\nprint(f\"Accuracy = {accuracy:.3f}\")\n```\nNote that the `C` value should be determined via a hyperparameter sweep using a validation split.\n## See Also\n* [OpenCLIP](https://github.com/mlfoundations/open_clip): includes larger and independently trained CLIP models up to ViT-G/14\n* [Hugging Face implementation of CLIP](https://huggingface.co/docs/transformers/model_doc/clip): for easier integration with the HF ecosystem",
+        "type": "code",
+        "location": "/README.md:179-199"
+    },
+    "15": {
+        "file_id": 0,
+        "content": "Calculating image features, performing logistic regression, and evaluating using a logistic regression classifier.\nHyperparameter C should be determined via validation split.\nSee also OpenCLIP and Hugging Face CLIP implementation.",
+        "type": "comment"
+    },
+    "16": {
+        "file_id": 1,
+        "content": "/hubconf.py",
+        "type": "filepath"
+    },
+    "17": {
+        "file_id": 1,
+        "content": "This code defines functions for creating entry points to load CLIP models and converting PIL images into tensors, while also mapping model names and updating the global namespace with different model entrypoints.",
+        "type": "summary"
+    },
+    "18": {
+        "file_id": 1,
+        "content": "from clip.clip import tokenize as _tokenize, load as _load, available_models as _available_models\nimport re\nimport string\ndependencies = [\"torch\", \"torchvision\", \"ftfy\", \"regex\", \"tqdm\"]\n# For compatibility (cannot include special characters in function name)\nmodel_functions = { model: re.sub(f'[{string.punctuation}]', '_', model) for model in _available_models()}\ndef _create_hub_entrypoint(model):\n    def entrypoint(**kwargs):      \n        return _load(model, **kwargs)\n    entrypoint.__doc__ = f\"\"\"Loads the {model} CLIP model\n        Parameters\n        ----------\n        device : Union[str, torch.device]\n            The device to put the loaded model\n        jit : bool\n            Whether to load the optimized JIT model or more hackable non-JIT model (default).\n        download_root: str\n            path to download the model files; by default, it uses \"~/.cache/clip\"\n        Returns\n        -------\n        model : torch.nn.Module\n            The {model} CLIP model\n        preprocess : Callable[[PIL.Image], torch.Tensor]",
+        "type": "code",
+        "location": "/hubconf.py:1-32"
+    },
+    "19": {
+        "file_id": 1,
+        "content": "This code defines a function _create_hub_entrypoint that creates an entry point for loading CLIP models. It also imports necessary dependencies and maps available model names to remove any special characters for compatibility.",
+        "type": "comment"
+    },
+    "20": {
+        "file_id": 1,
+        "content": "            A torchvision transform that converts a PIL image into a tensor that the returned model can take as its input\n        \"\"\"\n    return entrypoint\ndef tokenize():\n    return _tokenize\n_entrypoints = {model_functions[model]: _create_hub_entrypoint(model) for model in _available_models()}\nglobals().update(_entrypoints)",
+        "type": "code",
+        "location": "/hubconf.py:33-42"
+    },
+    "21": {
+        "file_id": 1,
+        "content": "This code defines a function that converts a PIL image into a tensor. It also creates entrypoints for different models using _available_models() and updates the global namespace with these entrypoints.",
+        "type": "comment"
+    },
+    "22": {
+        "file_id": 2,
+        "content": "/model-card.md",
+        "type": "filepath"
+    },
+    "23": {
+        "file_id": 2,
+        "content": "OpenAI's CLIP model is a multimodal AI for computer vision and zero-shot image classification. It uses ResNet50 or Vision Transformer as encoders but has limitations like dataset building, performance variability, and potential biases. Training data includes website crawling and YFCC100M datasets. The code provides a Google Form link for feedback on model performance and risks.",
+        "type": "summary"
+    },
+    "24": {
+        "file_id": 2,
+        "content": "# Model Card: CLIP\nInspired by [Model Cards for Model Reporting (Mitchell et al.)](https://arxiv.org/abs/1810.03993) and [Lessons from Archives (Jo & Gebru)](https://arxiv.org/pdf/1912.10389.pdf), we’re providing some accompanying information about the multimodal model.\n## Model Details\nThe CLIP model was developed by researchers at OpenAI to learn about what contributes to robustness in computer vision tasks. The model was also developed to test the ability of models to generalize to arbitrary image classification tasks in a zero-shot manner. It was not developed for general model deployment - to deploy models like CLIP, researchers will first need to carefully study their capabilities in relation to the specific context they’re being deployed within.\n### Model Date\nJanuary 2021\n### Model Type\nThe base model uses a ResNet50 with several modifications as an image encoder and uses a masked self-attention Transformer as a text encoder. These encoders are trained to maximize the similarity of (i",
+        "type": "code",
+        "location": "/model-card.md:1-15"
+    },
+    "25": {
+        "file_id": 2,
+        "content": "Storage location: \"model-card.md\":0-14\nCode description: This code is a model card for CLIP, a multimodal model developed by OpenAI researchers. The model aims to understand what contributes to robustness in computer vision tasks and test generalization abilities in zero-shot image classification tasks. It was not designed for general deployment and requires careful study before being used in specific contexts. The model card provides details on the development date, model type (ResNet50 with modifications as an image encoder and a masked self-attention Transformer as a text encoder), and that the encoders are trained to maximize similarity of inputs.",
+        "type": "comment"
+    },
+    "26": {
+        "file_id": 2,
+        "content": "mage, text) pairs via a contrastive loss. There is also a variant of the model where the ResNet image encoder is replaced with a Vision Transformer.\n### Model Versions\nInitially, we’ve released one CLIP model based on the Vision Transformer architecture equivalent to ViT-B/32, along with the RN50 model, using the architecture equivalent to ResNet-50.\nAs part of the staged release process, we have also released the RN101 model, as well as RN50x4, a RN50 scaled up 4x according to the [EfficientNet](https://arxiv.org/abs/1905.11946) scaling rule. In July 2021, we additionally released the RN50x16 and ViT-B/16 models, and in January 2022, the RN50x64 and ViT-L/14 models were released. Lastly, the ViT-L/14@336px model was released in April 2022.\nPlease see the paper linked below for further details about their specification.\n### Documents\n- [Blog Post](https://openai.com/blog/clip/)\n- [CLIP Paper](https://arxiv.org/abs/2103.00020)\n## Model Use\n### Intended Use\nThe model is intended as a research outp",
+        "type": "code",
+        "location": "/model-card.md:15-36"
+    },
+    "27": {
+        "file_id": 2,
+        "content": "This code describes the CLIP model, a contrastive image-text model with variants using Vision Transformer or ResNet image encoder. It mentions the different released versions of the model and provides links to relevant documents such as the blog post and paper for further details on specifications and intended use.",
+        "type": "comment"
+    },
+    "28": {
+        "file_id": 2,
+        "content": "ut for research communities. We hope that this model will enable researchers to better understand and explore zero-shot, arbitrary image classification. We also hope it can be used for interdisciplinary studies of the potential impact of such models - the CLIP paper includes a discussion of potential downstream impacts to provide an example for this sort of analysis.\n#### Primary intended uses\nThe primary intended users of these models are AI researchers.\nWe primarily imagine the model will be used by researchers to better understand robustness, generalization, and other capabilities, biases, and constraints of computer vision models.\n### Out-of-Scope Use Cases\n**Any** deployed use case of the model - whether commercial or not - is currently out of scope. Non-deployed use cases such as image search in a constrained environment, are also not recommended unless there is thorough in-domain testing of the model with a specific, fixed class taxonomy. This is because our safety assessment demonst",
+        "type": "code",
+        "location": "/model-card.md:36-46"
+    },
+    "29": {
+        "file_id": 2,
+        "content": "This code snippet provides information about the intended use and out-of-scope use cases for a specific model. It explains that the primary audience is AI researchers who will use it to study various aspects of computer vision models, such as robustness, generalization, capabilities, biases, and constraints. Deployed use cases are currently out of scope, while non-deployed use cases should only be considered after thorough in-domain testing with a fixed class taxonomy.",
+        "type": "comment"
+    },
+    "30": {
+        "file_id": 2,
+        "content": "rated a high need for task specific testing especially given the variability of CLIP’s performance with different class taxonomies. This makes untested and unconstrained deployment of the model in any use case currently potentially harmful. \nCertain use cases which would fall under the domain of surveillance and facial recognition are always out-of-scope regardless of performance of the model. This is because the use of artificial intelligence for tasks such as these can be premature currently given the lack of testing norms and checks to ensure its fair use.\nSince the model has not been purposefully trained in or evaluated on any languages other than English, its use should be limited to English language use cases.\n## Data\nThe model was trained on publicly available image-caption data. This was done through a combination of crawling a handful of websites and using commonly-used pre-existing image datasets such as [YFCC100M](http://projects.dfki.uni-kl.de/yfcc100m/). A large portion of the",
+        "type": "code",
+        "location": "/model-card.md:46-56"
+    },
+    "31": {
+        "file_id": 2,
+        "content": "The code highlights the need for task-specific testing due to CLIP's performance variability and cautions against unconstrained deployment in certain use cases. It also emphasizes the model's English language limitations and provides information on the data used for training, including crawling websites and using pre-existing datasets like YFCC100M.",
+        "type": "comment"
+    },
+    "32": {
+        "file_id": 2,
+        "content": " data comes from our crawling of the internet. This means that the data is more representative of people and societies most connected to the internet which tend to skew towards more developed nations, and younger, male users.\n### Data Mission Statement\nOur goal with building this dataset was to test out robustness and generalizability in computer vision tasks. As a result, the focus was on gathering large quantities of data from different publicly-available internet data sources. The data was gathered in a mostly non-interventionist manner. However, we only crawled websites that had policies against excessively violent and adult images and allowed us to filter out such content. We do not intend for this dataset to be used as the basis for any commercial or deployed model and will not be releasing the dataset.\n## Performance and Limitations\n### Performance\nWe have evaluated the performance of CLIP on a wide range of benchmarks across a variety of computer vision datasets such as OCR to textu",
+        "type": "code",
+        "location": "/model-card.md:56-68"
+    },
+    "33": {
+        "file_id": 2,
+        "content": "The code is describing the data used in building a dataset, its mission statement, and discussing performance and limitations. The data comes from internet crawling, mainly focusing on more developed nations and younger male users. The goal was to test robustness and generalizability in computer vision tasks. The dataset will not be released for commercial or deployed use. Performance is evaluated across various benchmarks and computer vision datasets like OCR to text.",
+        "type": "comment"
+    },
+    "34": {
+        "file_id": 2,
+        "content": "re recognition to fine-grained classification. The paper describes model performance on the following datasets:\n- Food101\n- CIFAR10   \n- CIFAR100   \n- Birdsnap\n- SUN397\n- Stanford Cars\n- FGVC Aircraft\n- VOC2007\n- DTD\n- Oxford-IIIT Pet dataset\n- Caltech101\n- Flowers102\n- MNIST   \n- SVHN \n- IIIT5K   \n- Hateful Memes   \n- SST-2\n- UCF101\n- Kinetics700\n- Country211\n- CLEVR Counting\n- KITTI Distance\n- STL-10\n- RareAct\n- Flickr30\n- MSCOCO\n- ImageNet\n- ImageNet-A\n- ImageNet-R\n- ImageNet Sketch\n- ObjectNet (ImageNet Overlap)\n- Youtube-BB\n- ImageNet-Vid\n## Limitations\nCLIP and our analysis of it have a number of limitations. CLIP currently struggles with respect to certain tasks such as fine grained classification and counting objects. CLIP also poses issues with regards to fairness and bias which we discuss in the paper and briefly in the next section. Additionally, our approach to testing CLIP also has an important limitation- in many cases we have used linear probes to evaluate the performance of CLIP and there is evidence suggesting that linear probes can underestimate model performance.",
+        "type": "code",
+        "location": "/model-card.md:68-106"
+    },
+    "35": {
+        "file_id": 2,
+        "content": "The code lists various datasets used in the evaluation of the model's performance.\n\nIt highlights that CLIP has limitations, such as difficulties with fine-grained classification and counting objects. It also addresses issues related to fairness and bias, while noting a limitation in their approach by using linear probes for evaluation, which may underestimate model performance.",
+        "type": "comment"
+    },
+    "36": {
+        "file_id": 2,
+        "content": "### Bias and Fairness\nWe find that the performance of CLIP - and the specific biases it exhibits - can depend significantly on class design and the choices one makes for categories to include and exclude. We tested the risk of certain kinds of denigration with CLIP by classifying images of people from [Fairface](https://arxiv.org/abs/1908.04913) into crime-related and non-human animal categories. We found significant disparities with respect to race and gender. Additionally, we found that these disparities could shift based on how the classes were constructed. (Details captured in the Broader Impacts Section in the paper).\nWe also tested the performance of CLIP on gender, race and age classification using the Fairface dataset (We default to using race categories as they are constructed in the Fairface dataset.) in order to assess quality of performance across different demographics. We found accuracy >96% across all races for gender classification with ‘Middle Eastern’ having the highest",
+        "type": "code",
+        "location": "/model-card.md:108-112"
+    },
+    "37": {
+        "file_id": 2,
+        "content": "Discusses the impact of class design on CLIP's biases, highlights disparities based on race and gender using Fairface dataset, and mentions accuracy over 96% for gender classification across all races.",
+        "type": "comment"
+    },
+    "38": {
+        "file_id": 2,
+        "content": " accuracy (98.4%) and ‘White’ having the lowest (96.5%). Additionally, CLIP averaged ~93% for racial classification and ~63% for age classification. Our use of evaluations to test for gender, race and age classification as well as denigration harms is simply to evaluate performance of the model across people and surface potential risks and not to demonstrate an endorsement/enthusiasm for such tasks.\n## Feedback\n### Where to send questions or comments about the model\nPlease use [this Google Form](https://forms.gle/Uv7afRH5dvY34ZEs9)",
+        "type": "code",
+        "location": "/model-card.md:112-120"
+    },
+    "39": {
+        "file_id": 2,
+        "content": "This code is providing the accuracy of the model for various classifications and emphasizing that these evaluations are to test performance and identify potential risks, not to endorse such tasks. It also provides a link to a Google Form for questions or comments about the model.",
+        "type": "comment"
+    },
+    "40": {
+        "file_id": 3,
+        "content": "/requirements.txt",
+        "type": "filepath"
+    },
+    "41": {
+        "file_id": 3,
+        "content": "Installing required packages: ftfy, regex, tqdm, torch, and torchvision.",
+        "type": "summary"
+    },
+    "42": {
+        "file_id": 3,
+        "content": "ftfy\nregex\ntqdm\ntorch\ntorchvision",
+        "type": "code",
+        "location": "/requirements.txt:1-5"
+    },
+    "43": {
+        "file_id": 3,
+        "content": "Installing required packages: ftfy, regex, tqdm, torch, and torchvision.",
+        "type": "comment"
+    },
+    "44": {
+        "file_id": 4,
+        "content": "/setup.py",
+        "type": "filepath"
+    },
+    "45": {
+        "file_id": 4,
+        "content": "This code sets up a Python package named \"clip\" using setuptools. It imports necessary modules, defines package attributes and requirements, and specifies installation dependencies. It also includes the \"dev\" extra requirement for developers.",
+        "type": "summary"
+    },
+    "46": {
+        "file_id": 4,
+        "content": "import os\nimport pkg_resources\nfrom setuptools import setup, find_packages\nsetup(\n    name=\"clip\",\n    py_modules=[\"clip\"],\n    version=\"1.0\",\n    description=\"\",\n    author=\"OpenAI\",\n    packages=find_packages(exclude=[\"tests*\"]),\n    install_requires=[\n        str(r)\n        for r in pkg_resources.parse_requirements(\n            open(os.path.join(os.path.dirname(__file__), \"requirements.txt\"))\n        )\n    ],\n    include_package_data=True,\n    extras_require={'dev': ['pytest']},\n)",
+        "type": "code",
+        "location": "/setup.py:1-21"
+    },
+    "47": {
+        "file_id": 4,
+        "content": "This code sets up a Python package named \"clip\" using setuptools. It imports necessary modules, defines package attributes and requirements, and specifies installation dependencies. It also includes the \"dev\" extra requirement for developers.",
+        "type": "comment"
+    },
+    "48": {
+        "file_id": 5,
+        "content": "/clip/__init__.py",
+        "type": "filepath"
+    },
+    "49": {
+        "file_id": 5,
+        "content": "Imports all functions and classes from the \"clip\" module.",
+        "type": "summary"
+    },
+    "50": {
+        "file_id": 5,
+        "content": "from .clip import *",
+        "type": "code",
+        "location": "/clip/__init__.py:1-1"
+    },
+    "51": {
+        "file_id": 5,
+        "content": "Imports all functions and classes from the \"clip\" module.",
+        "type": "comment"
+    },
+    "52": {
+        "file_id": 6,
+        "content": "/clip/clip.py",
+        "type": "filepath"
+    },
+    "53": {
+        "file_id": 6,
+        "content": "The code downloads and handles pre-trained models, including CLIP, checks availability, loads optimized versions, and implements device-specific patches while tokenizing input strings. This function encodes a list of texts using a tokenizer, adds start/end tokens, returns tensor, and optionally truncates if exceeding context length.",
+        "type": "summary"
+    },
+    "54": {
+        "file_id": 6,
+        "content": "import hashlib\nimport os\nimport urllib\nimport warnings\nfrom typing import Any, Union, List\nfrom pkg_resources import packaging\nimport torch\nfrom PIL import Image\nfrom torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize\nfrom tqdm import tqdm\nfrom .model import build_model\nfrom .simple_tokenizer import SimpleTokenizer as _Tokenizer\ntry:\n    from torchvision.transforms import InterpolationMode\n    BICUBIC = InterpolationMode.BICUBIC\nexcept ImportError:\n    BICUBIC = Image.BICUBIC\nif packaging.version.parse(torch.__version__) < packaging.version.parse(\"1.7.1\"):\n    warnings.warn(\"PyTorch version 1.7.1 or higher is recommended\")\n__all__ = [\"available_models\", \"load\", \"tokenize\"]\n_tokenizer = _Tokenizer()\n_MODELS = {\n    \"RN50\": \"https://openaipublic.azureedge.net/clip/models/afeb0e10f9e5a86da6080e35cf09123aca3b358a0c3e3b6c78a7b63bc04b6762/RN50.pt\",\n    \"RN101\": \"https://openaipublic.azureedge.net/clip/models/8fa8567bab74a42d41c5915025a8e4538c3bdbe8804a470a72f30b0d94fab599/RN101.pt\",\n    ",
+        "type": "code",
+        "location": "/clip/clip.py:1-33"
+    },
+    "55": {
+        "file_id": 6,
+        "content": "Importing necessary libraries and defining variables for model choices and tokenizer.",
+        "type": "comment"
+    },
+    "56": {
+        "file_id": 6,
+        "content": "\"RN50x4\": \"https://openaipublic.azureedge.net/clip/models/7e526bd135e493cef0776de27d5f42653e6b4c8bf9e0f653bb11773263205fdd/RN50x4.pt\",\n    \"RN50x16\": \"https://openaipublic.azureedge.net/clip/models/52378b407f34354e150460fe41077663dd5b39c54cd0bfd2b27167a4a06ec9aa/RN50x16.pt\",\n    \"RN50x64\": \"https://openaipublic.azureedge.net/clip/models/be1cfb55d75a9666199fb2206c106743da0f6468c9d327f3e0d0a543a9919d9c/RN50x64.pt\",\n    \"ViT-B/32\": \"https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt\",\n    \"ViT-B/16\": \"https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt\",\n    \"ViT-L/14\": \"https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt\",\n    \"ViT-L/14@336px\": \"https://openaipublic.azureedge.net/clip/models/3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02/ViT-L-14-336px.pt\",\n}\ndef _download(url: str, root: str):",
+        "type": "code",
+        "location": "/clip/clip.py:33-43"
+    },
+    "57": {
+        "file_id": 6,
+        "content": "This code defines a dictionary of URLs for different pre-trained models and includes a function _download() to download the model files.",
+        "type": "comment"
+    },
+    "58": {
+        "file_id": 6,
+        "content": "    os.makedirs(root, exist_ok=True)\n    filename = os.path.basename(url)\n    expected_sha256 = url.split(\"/\")[-2]\n    download_target = os.path.join(root, filename)\n    if os.path.exists(download_target) and not os.path.isfile(download_target):\n        raise RuntimeError(f\"{download_target} exists and is not a regular file\")\n    if os.path.isfile(download_target):\n        if hashlib.sha256(open(download_target, \"rb\").read()).hexdigest() == expected_sha256:\n            return download_target\n        else:\n            warnings.warn(f\"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file\")\n    with urllib.request.urlopen(url) as source, open(download_target, \"wb\") as output:\n        with tqdm(total=int(source.info().get(\"Content-Length\")), ncols=80, unit='iB', unit_scale=True, unit_divisor=1024) as loop:\n            while True:\n                buffer = source.read(8192)\n                if not buffer:\n                    break\n                output.write(buffer)\n                loop.update(len(buffer))",
+        "type": "code",
+        "location": "/clip/clip.py:44-67"
+    },
+    "59": {
+        "file_id": 6,
+        "content": "Creates a directory and checks if the file already exists, then downloads or verifies the file's SHA256 checksum.",
+        "type": "comment"
+    },
+    "60": {
+        "file_id": 6,
+        "content": "    if hashlib.sha256(open(download_target, \"rb\").read()).hexdigest() != expected_sha256:\n        raise RuntimeError(\"Model has been downloaded but the SHA256 checksum does not not match\")\n    return download_target\ndef _convert_image_to_rgb(image):\n    return image.convert(\"RGB\")\ndef _transform(n_px):\n    return Compose([\n        Resize(n_px, interpolation=BICUBIC),\n        CenterCrop(n_px),\n        _convert_image_to_rgb,\n        ToTensor(),\n        Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),\n    ])\ndef available_models() -> List[str]:\n    \"\"\"Returns the names of available CLIP models\"\"\"\n    return list(_MODELS.keys())\ndef load(name: str, device: Union[str, torch.device] = \"cuda\" if torch.cuda.is_available() else \"cpu\", jit: bool = False, download_root: str = None):\n    \"\"\"Load a CLIP model\n    Parameters\n    ----------\n    name : str\n        A model name listed by `clip.available_models()`, or the path to a model checkpoint containing the state_dict\n    device : Union[str, torch.device]",
+        "type": "code",
+        "location": "/clip/clip.py:69-102"
+    },
+    "61": {
+        "file_id": 6,
+        "content": "Code checks the SHA256 checksum of a downloaded model and raises an error if it doesn't match. It also defines functions for image transformation, loading available CLIP models, and converting images to RGB format.",
+        "type": "comment"
+    },
+    "62": {
+        "file_id": 6,
+        "content": "        The device to put the loaded model\n    jit : bool\n        Whether to load the optimized JIT model or more hackable non-JIT model (default).\n    download_root: str\n        path to download the model files; by default, it uses \"~/.cache/clip\"\n    Returns\n    -------\n    model : torch.nn.Module\n        The CLIP model\n    preprocess : Callable[[PIL.Image], torch.Tensor]\n        A torchvision transform that converts a PIL image into a tensor that the returned model can take as its input\n    \"\"\"\n    if name in _MODELS:\n        model_path = _download(_MODELS[name], download_root or os.path.expanduser(\"~/.cache/clip\"))\n    elif os.path.isfile(name):\n        model_path = name\n    else:\n        raise RuntimeError(f\"Model {name} not found; available models = {available_models()}\")\n    with open(model_path, 'rb') as opened_file:\n        try:\n            # loading JIT archive\n            model = torch.jit.load(opened_file, map_location=device if jit else \"cpu\").eval()\n            state_dict = None\n        except RuntimeError:",
+        "type": "code",
+        "location": "/clip/clip.py:103-131"
+    },
+    "63": {
+        "file_id": 6,
+        "content": "The code downloads the CLIP model based on the specified name and device. It checks if the model is available as a file or downloads it from the provided root path. The JIT-optimized version of the model is loaded if 'jit' is True, otherwise, the non-JIT version is used.",
+        "type": "comment"
+    },
+    "64": {
+        "file_id": 6,
+        "content": "            # loading saved state dict\n            if jit:\n                warnings.warn(f\"File {model_path} is not a JIT archive. Loading as a state dict instead\")\n                jit = False\n            state_dict = torch.load(opened_file, map_location=\"cpu\")\n    if not jit:\n        model = build_model(state_dict or model.state_dict()).to(device)\n        if str(device) == \"cpu\":\n            model.float()\n        return model, _transform(model.visual.input_resolution)\n    # patch the device names\n    device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])\n    device_node = [n for n in device_holder.graph.findAllNodes(\"prim::Constant\") if \"Device\" in repr(n)][-1]\n    def _node_get(node: torch._C.Node, key: str):\n        \"\"\"Gets attributes of a node which is polymorphic over return type.\n        From https://github.com/pytorch/pytorch/pull/82628\n        \"\"\"\n        sel = node.kindOf(key)\n        return getattr(node, sel)(key)\n    def patch_device(module):\n        try:",
+        "type": "code",
+        "location": "/clip/clip.py:132-157"
+    },
+    "65": {
+        "file_id": 6,
+        "content": "Loading saved state dict and handling JIT (Just-In-Time) support.\nIf not a JIT archive, loading as a state dict instead.\nLoading model with or without JIT support depending on jit variable.\nConverting model to float if device is CPU.\nReturning the model and transformed input resolution.\nPatching device names using torch.jit.trace.",
+        "type": "comment"
+    },
+    "66": {
+        "file_id": 6,
+        "content": "            graphs = [module.graph] if hasattr(module, \"graph\") else []\n        except RuntimeError:\n            graphs = []\n        if hasattr(module, \"forward1\"):\n            graphs.append(module.forward1.graph)\n        for graph in graphs:\n            for node in graph.findAllNodes(\"prim::Constant\"):\n                if \"value\" in node.attributeNames() and str(_node_get(node, \"value\")).startswith(\"cuda\"):\n                    node.copyAttributes(device_node)\n    model.apply(patch_device)\n    patch_device(model.encode_image)\n    patch_device(model.encode_text)\n    # patch dtype to float32 on CPU\n    if str(device) == \"cpu\":\n        float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])\n        float_input = list(float_holder.graph.findNode(\"aten::to\").inputs())[1]\n        float_node = float_input.node()\n        def patch_float(module):\n            try:\n                graphs = [module.graph] if hasattr(module, \"graph\") else []\n            except RuntimeError:\n                graphs = []",
+        "type": "code",
+        "location": "/clip/clip.py:158-184"
+    },
+    "67": {
+        "file_id": 6,
+        "content": "Applying device-specific patches to the model's graph.",
+        "type": "comment"
+    },
+    "68": {
+        "file_id": 6,
+        "content": "            if hasattr(module, \"forward1\"):\n                graphs.append(module.forward1.graph)\n            for graph in graphs:\n                for node in graph.findAllNodes(\"aten::to\"):\n                    inputs = list(node.inputs())\n                    for i in [1, 2]:  # dtype can be the second or third argument to aten::to()\n                        if _node_get(inputs[i].node(), \"value\") == 5:\n                            inputs[i].node().copyAttributes(float_node)\n        model.apply(patch_float)\n        patch_float(model.encode_image)\n        patch_float(model.encode_text)\n        model.float()\n    return model, _transform(model.input_resolution.item())\ndef tokenize(texts: Union[str, List[str]], context_length: int = 77, truncate: bool = False) -> Union[torch.IntTensor, torch.LongTensor]:\n    \"\"\"\n    Returns the tokenized representation of given input string(s)\n    Parameters\n    ----------\n    texts : Union[str, List[str]]\n        An input string or a list of input strings to tokenize\n    context_length : int",
+        "type": "code",
+        "location": "/clip/clip.py:186-214"
+    },
+    "69": {
+        "file_id": 6,
+        "content": "The code is applying a patch to select functions in the model to convert certain types to floats, then tokenizes input strings based on context_length.",
+        "type": "comment"
+    },
+    "70": {
+        "file_id": 6,
+        "content": "        The context length to use; all CLIP models use 77 as the context length\n    truncate: bool\n        Whether to truncate the text in case its encoding is longer than the context length\n    Returns\n    -------\n    A two-dimensional tensor containing the resulting tokens, shape = [number of input strings, context_length].\n    We return LongTensor when torch version is <1.8.0, since older index_select requires indices to be long.\n    \"\"\"\n    if isinstance(texts, str):\n        texts = [texts]\n    sot_token = _tokenizer.encoder[\"<|startoftext|>\"]\n    eot_token = _tokenizer.encoder[\"<|endoftext|>\"]\n    all_tokens = [[sot_token] + _tokenizer.encode(text) + [eot_token] for text in texts]\n    if packaging.version.parse(torch.__version__) < packaging.version.parse(\"1.8.0\"):\n        result = torch.zeros(len(all_tokens), context_length, dtype=torch.long)\n    else:\n        result = torch.zeros(len(all_tokens), context_length, dtype=torch.int)\n    for i, tokens in enumerate(all_tokens):\n        if len(tokens) > context_length:",
+        "type": "code",
+        "location": "/clip/clip.py:215-237"
+    },
+    "71": {
+        "file_id": 6,
+        "content": "This function takes a list of texts and encodes them using the tokenizer. It then adds start and end of text tokens, and returns a tensor of shape [number of input strings, context_length]. If torch version is <1.8.0, it uses LongTensor for indices.",
+        "type": "comment"
+    },
+    "72": {
+        "file_id": 6,
+        "content": "            if truncate:\n                tokens = tokens[:context_length]\n                tokens[-1] = eot_token\n            else:\n                raise RuntimeError(f\"Input {texts[i]} is too long for context length {context_length}\")\n        result[i, :len(tokens)] = torch.tensor(tokens)\n    return result",
+        "type": "code",
+        "location": "/clip/clip.py:238-245"
+    },
+    "73": {
+        "file_id": 6,
+        "content": "If truncate is True, only keep the first context_length tokens and set the last token to eot_token. If not, raise an error if input text exceeds the context length. Store the tokens as a torch tensor in result.",
+        "type": "comment"
+    },
+    "74": {
+        "file_id": 7,
+        "content": "/clip/model.py",
+        "type": "filepath"
+    },
+    "75": {
+        "file_id": 7,
+        "content": "A summary of the comments discusses implementing advanced models with deep learning and attention mechanisms, using CLIP models for Convolutional Neural Networks and VisionTransformers, and initializing, converting, and loading state dicts into a CLIP model for evaluation.",
+        "type": "summary"
+    },
+    "76": {
+        "file_id": 7,
+        "content": "from collections import OrderedDict\nfrom typing import Tuple, Union\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\nfrom torch import nn\nclass Bottleneck(nn.Module):\n    expansion = 4\n    def __init__(self, inplanes, planes, stride=1):\n        super().__init__()\n        # all conv layers have stride 1. an avgpool is performed after the second convolution when stride > 1\n        self.conv1 = nn.Conv2d(inplanes, planes, 1, bias=False)\n        self.bn1 = nn.BatchNorm2d(planes)\n        self.relu1 = nn.ReLU(inplace=True)\n        self.conv2 = nn.Conv2d(planes, planes, 3, padding=1, bias=False)\n        self.bn2 = nn.BatchNorm2d(planes)\n        self.relu2 = nn.ReLU(inplace=True)\n        self.avgpool = nn.AvgPool2d(stride) if stride > 1 else nn.Identity()\n        self.conv3 = nn.Conv2d(planes, planes * self.expansion, 1, bias=False)\n        self.bn3 = nn.BatchNorm2d(planes * self.expansion)\n        self.relu3 = nn.ReLU(inplace=True)\n        self.downsample = None\n        self.stride = stride\n        if stride > 1 or inplanes != planes * Bottleneck.expansion:",
+        "type": "code",
+        "location": "/clip/model.py:1-34"
+    },
+    "77": {
+        "file_id": 7,
+        "content": "Class Bottleneck is defined as a subclass of nn.Module for residual block in a Convolutional Neural Network (CNN) architecture. It performs multiple convolutions, batch normalization, and activation functions. If stride > 1, it also includes an average pooling layer. The downsample parameter is set to None here but can be used if input and output planes are different.",
+        "type": "comment"
+    },
+    "78": {
+        "file_id": 7,
+        "content": "            # downsampling layer is prepended with an avgpool, and the subsequent convolution has stride 1\n            self.downsample = nn.Sequential(OrderedDict([\n                (\"-1\", nn.AvgPool2d(stride)),\n                (\"0\", nn.Conv2d(inplanes, planes * self.expansion, 1, stride=1, bias=False)),\n                (\"1\", nn.BatchNorm2d(planes * self.expansion))\n            ]))\n    def forward(self, x: torch.Tensor):\n        identity = x\n        out = self.relu1(self.bn1(self.conv1(x)))\n        out = self.relu2(self.bn2(self.conv2(out)))\n        out = self.avgpool(out)\n        out = self.bn3(self.conv3(out))\n        if self.downsample is not None:\n            identity = self.downsample(x)\n        out += identity\n        out = self.relu3(out)\n        return out\nclass AttentionPool2d(nn.Module):\n    def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):\n        super().__init__()\n        self.positional_embedding = nn.Parameter(torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5)",
+        "type": "code",
+        "location": "/clip/model.py:35-61"
+    },
+    "79": {
+        "file_id": 7,
+        "content": "This code defines a convolutional block with downsampling and an AttentionPool2d module. The convolutional block performs convolutions with batch normalization and ReLU activations, while also allowing for optional downsampling through the defined `downsample` layer. The AttentionPool2d module is responsible for processing spatial features of input data using attention mechanism.",
+        "type": "comment"
+    },
+    "80": {
+        "file_id": 7,
+        "content": "        self.k_proj = nn.Linear(embed_dim, embed_dim)\n        self.q_proj = nn.Linear(embed_dim, embed_dim)\n        self.v_proj = nn.Linear(embed_dim, embed_dim)\n        self.c_proj = nn.Linear(embed_dim, output_dim or embed_dim)\n        self.num_heads = num_heads\n    def forward(self, x):\n        x = x.flatten(start_dim=2).permute(2, 0, 1)  # NCHW -> (HW)NC\n        x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC\n        x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC\n        x, _ = F.multi_head_attention_forward(\n            query=x[:1], key=x, value=x,\n            embed_dim_to_check=x.shape[-1],\n            num_heads=self.num_heads,\n            q_proj_weight=self.q_proj.weight,\n            k_proj_weight=self.k_proj.weight,\n            v_proj_weight=self.v_proj.weight,\n            in_proj_weight=None,\n            in_proj_bias=torch.cat([self.q_proj.bias, self.k_proj.bias, self.v_proj.bias]),\n            bias_k=None,\n            bias_v=None,\n            add_zero_attn=False,",
+        "type": "code",
+        "location": "/clip/model.py:62-83"
+    },
+    "81": {
+        "file_id": 7,
+        "content": "The code defines a class with `forward` method and initializes the necessary linear layers (`k_proj`, `q_proj`, `v_proj`, `c_proj`) for multi-head attention. It then processes input `x` by flattening, concatenating, adding positional embeddings, and finally calling `F.multi_head_attention_forward` with appropriate arguments.",
+        "type": "comment"
+    },
+    "82": {
+        "file_id": 7,
+        "content": "            dropout_p=0,\n            out_proj_weight=self.c_proj.weight,\n            out_proj_bias=self.c_proj.bias,\n            use_separate_proj_weight=True,\n            training=self.training,\n            need_weights=False\n        )\n        return x.squeeze(0)\nclass ModifiedResNet(nn.Module):\n    \"\"\"\n    A ResNet class that is similar to torchvision's but contains the following changes:\n    - There are now 3 \"stem\" convolutions as opposed to 1, with an average pool instead of a max pool.\n    - Performs anti-aliasing strided convolutions, where an avgpool is prepended to convolutions with stride > 1\n    - The final pooling layer is a QKV attention instead of an average pool\n    \"\"\"\n    def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):\n        super().__init__()\n        self.output_dim = output_dim\n        self.input_resolution = input_resolution\n        # the 3-layer stem\n        self.conv1 = nn.Conv2d(3, width // 2, kernel_size=3, stride=2, padding=1, bias=False)\n        self.bn1 = nn.BatchNorm2d(width // 2)",
+        "type": "code",
+        "location": "/clip/model.py:84-109"
+    },
+    "83": {
+        "file_id": 7,
+        "content": "Code snippet initializes a Conv2d layer, followed by BatchNorm2d layer for the stem of the modified ResNet. The stem consists of 3 convolution layers, each with stride 2 and padding 1. The BatchNorm2d layer normalizes the output of the convolution layer.",
+        "type": "comment"
+    },
+    "84": {
+        "file_id": 7,
+        "content": "        self.relu1 = nn.ReLU(inplace=True)\n        self.conv2 = nn.Conv2d(width // 2, width // 2, kernel_size=3, padding=1, bias=False)\n        self.bn2 = nn.BatchNorm2d(width // 2)\n        self.relu2 = nn.ReLU(inplace=True)\n        self.conv3 = nn.Conv2d(width // 2, width, kernel_size=3, padding=1, bias=False)\n        self.bn3 = nn.BatchNorm2d(width)\n        self.relu3 = nn.ReLU(inplace=True)\n        self.avgpool = nn.AvgPool2d(2)\n        # residual layers\n        self._inplanes = width  # this is a *mutable* variable used during construction\n        self.layer1 = self._make_layer(width, layers[0])\n        self.layer2 = self._make_layer(width * 2, layers[1], stride=2)\n        self.layer3 = self._make_layer(width * 4, layers[2], stride=2)\n        self.layer4 = self._make_layer(width * 8, layers[3], stride=2)\n        embed_dim = width * 32  # the ResNet feature dimension\n        self.attnpool = AttentionPool2d(input_resolution // 32, embed_dim, heads, output_dim)\n    def _make_layer(self, planes, blocks, stride=1):",
+        "type": "code",
+        "location": "/clip/model.py:110-129"
+    },
+    "85": {
+        "file_id": 7,
+        "content": "Code is defining a ResNet model with various layers such as convolution, batch normalization, ReLU activation, average pooling, and residual layers. It also includes an attention pooling layer. The ResNet model's feature dimension is set to 32.",
+        "type": "comment"
+    },
+    "86": {
+        "file_id": 7,
+        "content": "        layers = [Bottleneck(self._inplanes, planes, stride)]\n        self._inplanes = planes * Bottleneck.expansion\n        for _ in range(1, blocks):\n            layers.append(Bottleneck(self._inplanes, planes))\n        return nn.Sequential(*layers)\n    def forward(self, x):\n        def stem(x):\n            x = self.relu1(self.bn1(self.conv1(x)))\n            x = self.relu2(self.bn2(self.conv2(x)))\n            x = self.relu3(self.bn3(self.conv3(x)))\n            x = self.avgpool(x)\n            return x\n        x = x.type(self.conv1.weight.dtype)\n        x = stem(x)\n        x = self.layer1(x)\n        x = self.layer2(x)\n        x = self.layer3(x)\n        x = self.layer4(x)\n        x = self.attnpool(x)\n        return x\nclass LayerNorm(nn.LayerNorm):\n    \"\"\"Subclass torch's LayerNorm to handle fp16.\"\"\"\n    def forward(self, x: torch.Tensor):\n        orig_type = x.dtype\n        ret = super().forward(x.type(torch.float32))\n        return ret.type(orig_type)\nclass QuickGELU(nn.Module):\n    def forward(self, x: torch.Tensor):",
+        "type": "code",
+        "location": "/clip/model.py:130-167"
+    },
+    "87": {
+        "file_id": 7,
+        "content": "129-138: Initialize layers with a Bottleneck block.\n140-146: Update inplanes for subsequent blocks.\n147-152: Append additional Bottleneck blocks to layers list.\n153-159: Return a nn.Sequential model from the layers list.\n160-166: Implement forward pass of the model, including stem and layer blocks.",
+        "type": "comment"
+    },
+    "88": {
+        "file_id": 7,
+        "content": "        return x * torch.sigmoid(1.702 * x)\nclass ResidualAttentionBlock(nn.Module):\n    def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None):\n        super().__init__()\n        self.attn = nn.MultiheadAttention(d_model, n_head)\n        self.ln_1 = LayerNorm(d_model)\n        self.mlp = nn.Sequential(OrderedDict([\n            (\"c_fc\", nn.Linear(d_model, d_model * 4)),\n            (\"gelu\", QuickGELU()),\n            (\"c_proj\", nn.Linear(d_model * 4, d_model))\n        ]))\n        self.ln_2 = LayerNorm(d_model)\n        self.attn_mask = attn_mask\n    def attention(self, x: torch.Tensor):\n        self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None\n        return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]\n    def forward(self, x: torch.Tensor):\n        x = x + self.attention(self.ln_1(x))\n        x = x + self.mlp(self.ln_2(x))\n        return x\nclass Transformer(nn.Module):\n    def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):",
+        "type": "code",
+        "location": "/clip/model.py:168-196"
+    },
+    "89": {
+        "file_id": 7,
+        "content": "This code defines a Transformer model, specifically the Residual Attention Block and the main Transformer class. The ResidualAttentionBlock contains a MultiheadAttention layer, LayerNorm layers, and a feed-forward network. The Transformer class is initialized with width (d_model), number of layers, and number of heads for attention mechanism. It also accepts an optional attn_mask tensor.",
+        "type": "comment"
+    },
+    "90": {
+        "file_id": 7,
+        "content": "        super().__init__()\n        self.width = width\n        self.layers = layers\n        self.resblocks = nn.Sequential(*[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)])\n    def forward(self, x: torch.Tensor):\n        return self.resblocks(x)\nclass VisionTransformer(nn.Module):\n    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int):\n        super().__init__()\n        self.input_resolution = input_resolution\n        self.output_dim = output_dim\n        self.conv1 = nn.Conv2d(in_channels=3, out_channels=width, kernel_size=patch_size, stride=patch_size, bias=False)\n        scale = width ** -0.5\n        self.class_embedding = nn.Parameter(scale * torch.randn(width))\n        self.positional_embedding = nn.Parameter(scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width))\n        self.ln_pre = LayerNorm(width)\n        self.transformer = Transformer(width, layers, heads)\n        self.ln_post = LayerNorm(width)",
+        "type": "code",
+        "location": "/clip/model.py:197-220"
+    },
+    "91": {
+        "file_id": 7,
+        "content": "This code defines a VisionTransformer model with an input resolution, patch size, width, layers, number of heads, and output dimension. It initializes the model's parameters and contains forward pass and transformer class definitions.",
+        "type": "comment"
+    },
+    "92": {
+        "file_id": 7,
+        "content": "        self.proj = nn.Parameter(scale * torch.randn(width, output_dim))\n    def forward(self, x: torch.Tensor):\n        x = self.conv1(x)  # shape = [*, width, grid, grid]\n        x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]\n        x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]\n        x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)  # shape = [*, grid ** 2 + 1, width]\n        x = x + self.positional_embedding.to(x.dtype)\n        x = self.ln_pre(x)\n        x = x.permute(1, 0, 2)  # NLD -> LND\n        x = self.transformer(x)\n        x = x.permute(1, 0, 2)  # LND -> NLD\n        x = self.ln_post(x[:, 0, :])\n        if self.proj is not None:\n            x = x @ self.proj\n        return x\nclass CLIP(nn.Module):\n    def __init__(self,\n                 embed_dim: int,\n                 # vision\n                 image_resolution: int,\n                 vision_layers: Union[Tuple[int, int, int, int], int],",
+        "type": "code",
+        "location": "/clip/model.py:221-248"
+    },
+    "93": {
+        "file_id": 7,
+        "content": "This code defines a CLIP model, which consists of a convolutional layer followed by a Transformer. It performs feature extraction from an input image and then processes the features with a transformer network. The proj parameter is used for applying final linear projection if not None.\nCode location: \"clip/model.py\":249-271",
+        "type": "comment"
+    },
+    "94": {
+        "file_id": 7,
+        "content": "                 vision_width: int,\n                 vision_patch_size: int,\n                 # text\n                 context_length: int,\n                 vocab_size: int,\n                 transformer_width: int,\n                 transformer_heads: int,\n                 transformer_layers: int\n                 ):\n        super().__init__()\n        self.context_length = context_length\n        if isinstance(vision_layers, (tuple, list)):\n            vision_heads = vision_width * 32 // 64\n            self.visual = ModifiedResNet(\n                layers=vision_layers,\n                output_dim=embed_dim,\n                heads=vision_heads,\n                input_resolution=image_resolution,\n                width=vision_width\n            )\n        else:\n            vision_heads = vision_width // 64\n            self.visual = VisionTransformer(\n                input_resolution=image_resolution,\n                patch_size=vision_patch_size,\n                width=vision_width,\n                layers=vision_layers,\n                heads=vision_heads,",
+        "type": "code",
+        "location": "/clip/model.py:249-278"
+    },
+    "95": {
+        "file_id": 7,
+        "content": "Initializing a model with provided parameters for vision and language processing.",
+        "type": "comment"
+    },
+    "96": {
+        "file_id": 7,
+        "content": "                output_dim=embed_dim\n            )\n        self.transformer = Transformer(\n            width=transformer_width,\n            layers=transformer_layers,\n            heads=transformer_heads,\n            attn_mask=self.build_attention_mask()\n        )\n        self.vocab_size = vocab_size\n        self.token_embedding = nn.Embedding(vocab_size, transformer_width)\n        self.positional_embedding = nn.Parameter(torch.empty(self.context_length, transformer_width))\n        self.ln_final = LayerNorm(transformer_width)\n        self.text_projection = nn.Parameter(torch.empty(transformer_width, embed_dim))\n        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))\n        self.initialize_parameters()\n    def initialize_parameters(self):\n        nn.init.normal_(self.token_embedding.weight, std=0.02)\n        nn.init.normal_(self.positional_embedding, std=0.01)\n        if isinstance(self.visual, ModifiedResNet):\n            if self.visual.attnpool is not None:\n                std = self.visual.attnpool.c_proj.in_features ** -0.5",
+        "type": "code",
+        "location": "/clip/model.py:279-305"
+    },
+    "97": {
+        "file_id": 7,
+        "content": "This code initializes the model's parameters. It sets up layers such as transformer, token embedding, positional embedding, layer normalization, and logit scale. The initialize_parameters method is used to set up initial values for the embeddings with small standard deviations.",
+        "type": "comment"
+    },
+    "98": {
+        "file_id": 7,
+        "content": "                nn.init.normal_(self.visual.attnpool.q_proj.weight, std=std)\n                nn.init.normal_(self.visual.attnpool.k_proj.weight, std=std)\n                nn.init.normal_(self.visual.attnpool.v_proj.weight, std=std)\n                nn.init.normal_(self.visual.attnpool.c_proj.weight, std=std)\n            for resnet_block in [self.visual.layer1, self.visual.layer2, self.visual.layer3, self.visual.layer4]:\n                for name, param in resnet_block.named_parameters():\n                    if name.endswith(\"bn3.weight\"):\n                        nn.init.zeros_(param)\n        proj_std = (self.transformer.width ** -0.5) * ((2 * self.transformer.layers) ** -0.5)\n        attn_std = self.transformer.width ** -0.5\n        fc_std = (2 * self.transformer.width) ** -0.5\n        for block in self.transformer.resblocks:\n            nn.init.normal_(block.attn.in_proj_weight, std=attn_std)\n            nn.init.normal_(block.attn.out_proj.weight, std=proj_std)\n            nn.init.normal_(block.mlp.c_fc.weight, std=fc_std)",
+        "type": "code",
+        "location": "/clip/model.py:306-322"
+    },
+    "99": {
+        "file_id": 7,
+        "content": "This code initializes the weights of various layers in a neural network model. It uses different initialization methods and standards deviations for different types of layers, such as normalizing the weights for attention pools, ResNet blocks, and feedforward layers.",
+        "type": "comment"
+    }
+}
