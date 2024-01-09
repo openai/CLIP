@@ -1,7 +1,7 @@
 {
     "url": {
-        "full": "https://github.com/james4ever0/CLIP",
-        "partial": "james4ever0/CLIP"
+        "full": "https://github.com/openai/CLIP",
+        "partial": "openai/CLIP"
     },
     "file_mapping": {
         "0": {
