@@ -2,8 +2,8 @@ import hashlib
 import os
 import urllib
 import warnings
-from typing import Any, Union, List
-from pkg_resources import packaging
+from typing import Union, List
+from packaging import version
 
 import torch
 from PIL import Image
@@ -15,12 +15,13 @@ from .simple_tokenizer import SimpleTokenizer as _Tokenizer
 
 try:
     from torchvision.transforms import InterpolationMode
+
     BICUBIC = InterpolationMode.BICUBIC
 except ImportError:
     BICUBIC = Image.BICUBIC
 
 
-if packaging.version.parse(torch.__version__) < packaging.version.parse("1.7.1"):
+if version.parse(torch.__version__) < version.parse("1.7.1"):
     warnings.warn("PyTorch version 1.7.1 or higher is recommended")
 
 
@@ -57,7 +58,9 @@ def _download(url: str, root: str):
             warnings.warn(f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file")
 
     with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        with tqdm(total=int(source.info().get("Content-Length")), ncols=80, unit='iB', unit_scale=True, unit_divisor=1024) as loop:
+        with tqdm(
+            total=int(source.info().get("Content-Length")), ncols=80, unit="iB", unit_scale=True, unit_divisor=1024
+        ) as loop:
             while True:
                 buffer = source.read(8192)
                 if not buffer:
@@ -77,13 +80,15 @@ def _convert_image_to_rgb(image):
 
 
 def _transform(n_px):
-    return Compose([
-        Resize(n_px, interpolation=BICUBIC),
-        CenterCrop(n_px),
-        _convert_image_to_rgb,
-        ToTensor(),
-        Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
-    ])
+    return Compose(
+        [
+            Resize(n_px, interpolation=BICUBIC),
+            CenterCrop(n_px),
+            _convert_image_to_rgb,
+            ToTensor(),
+            Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
+        ]
+    )
 
 
 def available_models() -> List[str]:
@@ -125,7 +130,7 @@ def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, 
     else:
         raise RuntimeError(f"Model {name} not found; available models = {available_models()}")
 
-    with open(model_path, 'rb') as opened_file:
+    with open(model_path, "rb") as opened_file:
         try:
             # loading JIT archive
             model = torch.jit.load(opened_file, map_location=device if jit else "cpu").eval()
@@ -149,7 +154,7 @@ def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, 
 
     def _node_get(node: torch._C.Node, key: str):
         """Gets attributes of a node which is polymorphic over return type.
-        
+
         From https://github.com/pytorch/pytorch/pull/82628
         """
         sel = node.kindOf(key)
@@ -204,7 +209,9 @@ def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, 
     return model, _transform(model.input_resolution.item())
 
 
-def tokenize(texts: Union[str, List[str]], context_length: int = 77, truncate: bool = False) -> Union[torch.IntTensor, torch.LongTensor]:
+def tokenize(
+    texts: Union[str, List[str]], context_length: int = 77, truncate: bool = False
+) -> Union[torch.IntTensor, torch.LongTensor]:
     """
     Returns the tokenized representation of given input string(s)
 
@@ -230,10 +237,11 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77, truncate: b
     sot_token = _tokenizer.encoder["<|startoftext|>"]
     eot_token = _tokenizer.encoder["<|endoftext|>"]
     all_tokens = [[sot_token] + _tokenizer.encode(text) + [eot_token] for text in texts]
-    if packaging.version.parse(torch.__version__) < packaging.version.parse("1.8.0"):
-        result = torch.zeros(len(all_tokens), context_length, dtype=torch.long)
-    else:
-        result = torch.zeros(len(all_tokens), context_length, dtype=torch.int)
+    result = torch.zeros(
+        len(all_tokens),
+        context_length,
+        dtype=torch.long if version.parse(torch.__version__) < version.parse("1.8.0") else torch.int,
+    )
 
     for i, tokens in enumerate(all_tokens):
         if len(tokens) > context_length:
@@ -242,6 +250,6 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77, truncate: b
                 tokens[-1] = eot_token
             else:
                 raise RuntimeError(f"Input {texts[i]} is too long for context length {context_length}")
-        result[i, :len(tokens)] = torch.tensor(tokens)
+        result[i, : len(tokens)] = torch.tensor(tokens)
 
     return result
