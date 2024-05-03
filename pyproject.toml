@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clip"
+dynamic = ["version", "readme"]
+authors = [{name = "OpenAI"}]
+requires-python = ">=3.8"
+dependencies = [
+    "ftfy",
+    "regex",
+    "tqdm",
+    "torch>=1.7.1",
+    "torchvision",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.dynamic]
+version = {attr = "clip.__version__"}
+readme = {file = ["README.md"]}
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
