@@ -8,3 +8,5 @@ __pycache__/
 thumbs.db
 .DS_Store
 .idea
+
+build
