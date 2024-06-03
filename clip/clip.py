@@ -3,7 +3,7 @@ import os
 import urllib
 import warnings
 from typing import Any, Union, List
-from pkg_resources import packaging
+import pkg_resources
 
 import torch
 from PIL import Image
@@ -19,6 +19,30 @@ try:
 except ImportError:
     BICUBIC = Image.BICUBIC
 
+
+import pkg_resources
+
+# Solves import issue with changes in setuptools 70.0.0 (https://setuptools.pypa.io/en/stable/history.html#v70-0-0)
+def import_packaging():
+    try:
+        # Get the version of setuptools
+        setuptools_version = pkg_resources.get_distribution("setuptools").version
+        # Print setuptools version for debugging
+        print(f"setuptools version: {setuptools_version}")
+
+        # Parse the version string to compare versions
+        from packaging import version
+        if version.parse(setuptools_version) >= version.parse("70.0.0"):
+            # For setuptools version 70.0.0 and above
+            import packaging
+        else:
+            # For setuptools versions below 70.0.0
+            from pkg_resources import packaging
+        return packaging
+    except Exception as e:
+        raise ImportError(f"Failed to import 'packaging' module: {e}")
+
+packaging = import_packaging()
 
 if packaging.version.parse(torch.__version__) < packaging.version.parse("1.7.1"):
     warnings.warn("PyTorch version 1.7.1 or higher is recommended")
@@ -38,7 +62,6 @@ _MODELS = {
     "ViT-L/14": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
     "ViT-L/14@336px": "https://openaipublic.azureedge.net/clip/models/3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02/ViT-L-14-336px.pt",
 }
-
 
 def _download(url: str, root: str):
     os.makedirs(root, exist_ok=True)
