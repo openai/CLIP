@@ -63,28 +63,6 @@ _MODELS = {
     "ViT-L/14@336px": "https://openaipublic.azureedge.net/clip/models/3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02/ViT-L-14-336px.pt",
 }
 
-def import_packaging():
-    try:
-        # Get the version of setuptools
-        setuptools_version = pkg_resources.get_distribution("setuptools").version
-        # Print setuptools version for debugging
-        print(f"setuptools version: {setuptools_version}")
-
-        # Parse the version string to compare versions
-        from packaging import version
-        if version.parse(setuptools_version) >= version.parse("70.0.0"):
-            # For setuptools version 70.0.0 and above
-            import packaging
-        else:
-            # For setuptools versions below 70.0.0
-            from pkg_resources import packaging
-        return packaging
-    except Exception as e:
-        raise ImportError(f"Failed to import 'packaging' module: {e}")
-
-packaging = import_packaging()
-
-
 def _download(url: str, root: str):
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
