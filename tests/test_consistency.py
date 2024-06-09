@@ -1,12 +1,11 @@
+import clip
 import numpy as np
 import pytest
 import torch
 from PIL import Image
 
-import clip
 
-
-@pytest.mark.parametrize('model_name', clip.available_models())
+@pytest.mark.parametrize("model_name", clip.available_models())
 def test_consistency(model_name):
     device = "cpu"
     jit_model, transform = clip.load(model_name, device=device, jit=True)

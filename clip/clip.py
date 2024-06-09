@@ -2,12 +2,12 @@ import hashlib
 import os
 import urllib
 import warnings
-from typing import Union, List
-from packaging import version
+from typing import List, Union
 
 import torch
+from packaging import version
 from PIL import Image
-from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
+from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTensor
 from tqdm import tqdm
 
 from .model import build_model
@@ -92,12 +92,13 @@ def _transform(n_px):
 
 
 def available_models() -> List[str]:
-    """Returns the names of available CLIP models"""
+    """Returns the names of available CLIP models."""
     return list(_MODELS.keys())
 
 
 def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, download_root: str = None):
-    """Load a CLIP model
+    """
+    Load a CLIP model.
 
     Parameters
     ----------
@@ -153,7 +154,8 @@ def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, 
     device_node = [n for n in device_holder.graph.findAllNodes("prim::Constant") if "Device" in repr(n)][-1]
 
     def _node_get(node: torch._C.Node, key: str):
-        """Gets attributes of a node which is polymorphic over return type.
+        """
+        Gets attributes of a node which is polymorphic over return type.
 
         From https://github.com/pytorch/pytorch/pull/82628
         """
@@ -245,11 +247,10 @@ def tokenize(
 
     for i, tokens in enumerate(all_tokens):
         if len(tokens) > context_length:
-            if truncate:
-                tokens = tokens[:context_length]
-                tokens[-1] = eot_token
-            else:
+            if not truncate:
                 raise RuntimeError(f"Input {texts[i]} is too long for context length {context_length}")
+            tokens = tokens[:context_length]
+            tokens[-1] = eot_token
         result[i, : len(tokens)] = torch.tensor(tokens)
 
     return result
