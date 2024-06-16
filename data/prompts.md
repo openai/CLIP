@@ -1543,7 +1543,7 @@ classes = [
     'stop',
     'empty red and white circle',
     'red and white circle no truck entry',
-    'red circle with white horizonal stripe no entry',
+    'red circle with white horizontal stripe no entry',
     'red and white triangle with exclamation mark warning',
     'red and white triangle with black left curve approaching warning',
     'red and white triangle with black right curve approaching warning',

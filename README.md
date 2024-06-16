@@ -1,6 +1,6 @@
 # CLIP
 
-[[Blog]](https://openai.com/blog/clip/) [[Paper]](https://arxiv.org/abs/2103.00020) [[Model Card]](model-card.md) [[Colab]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
+[\[Blog\]](https://openai.com/blog/clip/) [\[Paper\]](https://arxiv.org/abs/2103.00020) [\[Model Card\]](model-card.md) [\[Colab\]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
 
 CLIP (Contrastive Language-Image Pre-Training) is a neural network trained on a variety of (image, text) pairs. It can be instructed in natural language to predict the most relevant text snippet, given an image, without directly optimizing for the task, similarly to the zero-shot capabilities of GPT-2 and 3. We found CLIP matches the performance of the original ResNet50 on ImageNet “zero-shot” without using any of the original 1.28M labeled examples, overcoming several major challenges in computer vision.
 
@@ -22,8 +22,9 @@ Replace `cudatoolkit=11.0` above with the appropriate CUDA version on your machi
 
 ```python
 import torch
-import clip
 from PIL import Image
+
+import clip
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
@@ -59,7 +60,7 @@ The device to run the model can be optionally specified, and the default is to u
 
 Returns a LongTensor containing tokenized sequences of given text input(s). This can be used as the input to the model
 
----
+______________________________________________________________________
 
 The model returned by `clip.load()` supports the following methods:
 
@@ -83,13 +84,15 @@ The code below performs zero-shot prediction using CLIP, as shown in Appendix B 
 
 ```python
 import os
-import clip
+
 import torch
 from torchvision.datasets import CIFAR100
 
+import clip
+
 # Load the model
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip.load('ViT-B/32', device)
+model, preprocess = clip.load("ViT-B/32", device)
 
 # Download the dataset
 cifar100 = CIFAR100(root=os.path.expanduser("~/.cache"), download=True, train=False)
@@ -136,18 +139,19 @@ The example below uses [scikit-learn](https://scikit-learn.org/) to perform logi
 
 ```python
 import os
-import clip
-import torch
 
 import numpy as np
+import torch
 from sklearn.linear_model import LogisticRegression
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100
 from tqdm import tqdm
 
+import clip
+
 # Load the model
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip.load('ViT-B/32', device)
+model, preprocess = clip.load("ViT-B/32", device)
 
 # Load the dataset
 root = os.path.expanduser("~/.cache")
@@ -168,6 +172,7 @@ def get_features(dataset):
 
     return torch.cat(all_features).cpu().numpy(), torch.cat(all_labels).cpu().numpy()
 
+
 # Calculate the image features
 train_features, train_labels = get_features(train)
 test_features, test_labels = get_features(test)
@@ -178,7 +183,7 @@ classifier.fit(train_features, train_labels)
 
 # Evaluate using the logistic regression classifier
 predictions = classifier.predict(test_features)
-accuracy = np.mean((test_labels == predictions).astype(float)) * 100.
+accuracy = np.mean((test_labels == predictions).astype(float)) * 100.0
 print(f"Accuracy = {accuracy:.3f}")
 ```
 
