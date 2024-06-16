@@ -1,6 +1,6 @@
 # The YFCC100M Subset
 
-In the paper, we performed a dataset ablation using a subset of the YFCC100M dataset and showed that the performance remained largely similar. 
+In the paper, we performed a dataset ablation using a subset of the YFCC100M dataset and showed that the performance remained largely similar.
 
 The subset contains 14,829,396 images, about 15% of the full dataset, which have been filtered to only keep those with natural languag titles and/or descriptions in English.
 

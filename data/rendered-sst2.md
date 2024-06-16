@@ -8,4 +8,3 @@ The following command will download a 131MB archive countaining the images and e
 wget https://openaipublic.azureedge.net/clip/data/rendered-sst2.tgz
 tar zxvf rendered-sst2.tgz
 ```
-

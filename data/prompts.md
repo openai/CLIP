@@ -6,7 +6,6 @@ This file contains prompt data for 26 of the 27 datasets shown in Table 9 of the
 
 If you are viewing this document on GitHub, use the table of contents icon at the upper left to browse the datasets.
 
-
 ## Birdsnap
 
 ```bash
@@ -518,8 +517,6 @@ templates = [
 ]
 ```
 
-
-
 ## CIFAR10
 
 ```bash
@@ -557,8 +554,6 @@ templates = [
     'a photo of the big {}.',
 ]
 ```
-
-
 
 ## CIFAR100
 
@@ -688,8 +683,6 @@ templates = [
 ]
 ```
 
-
-
 ## CLEVRCounts
 
 ```bash
@@ -708,8 +701,6 @@ templates = [
     'a photo of {} objects.',
 ]
 ```
-
-
 
 ## Caltech101
 
@@ -856,8 +847,6 @@ templates = [
     'a doodle of the {}.',
 ]
 ```
-
-
 
 ## Country211
 
@@ -1085,8 +1074,6 @@ templates = [
 ]
 ```
 
-
-
 ## DescribableTextures
 
 ```bash
@@ -1152,8 +1139,6 @@ templates = [
 ]
 ```
 
-
-
 ## EuroSAT
 
 ```bash
@@ -1176,8 +1161,6 @@ templates = [
     'a centered satellite photo of the {}.',
 ]
 ```
-
-
 
 ## FGVCAircraft
 
@@ -1291,8 +1274,6 @@ templates = [
 ]
 ```
 
-
-
 ## FacialEmotionRecognition2013
 
 ```bash
@@ -1315,8 +1296,6 @@ templates = [
     'look at how {} they are.',
 ]
 ```
-
-
 
 ## Flowers102
 
@@ -1431,8 +1410,6 @@ templates = [
 ]
 ```
 
-
-
 ## Food101
 
 ```bash
@@ -1545,8 +1522,6 @@ templates = [
 ]
 ```
 
-
-
 ## GTSRB
 
 ```bash
@@ -1603,8 +1578,6 @@ templates = [
 ]
 ```
 
-
-
 ## HatefulMemes
 
 ```bash
@@ -1617,8 +1590,6 @@ templates = [
     'a {}.',
 ]
 ```
-
-
 
 ## KITTI
 
@@ -1634,8 +1605,6 @@ templates = [
     '{}',
 ]
 ```
-
-
 
 ## Kinetics700
 
@@ -2375,8 +2344,6 @@ templates = [
 ]
 ```
 
-
-
 ## MNIST
 
 ```bash
@@ -2397,8 +2364,6 @@ templates = [
     'a photo of the number: "{}".',
 ]
 ```
-
-
 
 ## OxfordPets
 
@@ -2448,8 +2413,6 @@ templates = [
 ]
 ```
 
-
-
 ## PascalVOC2007
 
 ```bash
@@ -2481,8 +2444,6 @@ templates = [
 ]
 ```
 
-
-
 ## PatchCamelyon
 
 ```bash
@@ -2495,8 +2456,6 @@ templates = [
     'this is a photo of {}',
 ]
 ```
-
-
 
 ## RESISC45
 
@@ -2571,8 +2530,6 @@ templates = [
 ]
 ```
 
-
-
 ## SST2
 
 ```bash
@@ -2585,8 +2542,6 @@ templates = [
     'a {} review of a movie.',
 ]
 ```
-
-
 
 ## STL10
 
@@ -2609,8 +2564,6 @@ templates = [
     'a photo of the {}.',
 ]
 ```
-
-
 
 ## SUN397
 
@@ -3021,8 +2974,6 @@ templates = [
 ]
 ```
 
-
-
 ## StanfordCars
 
 ```bash
@@ -3237,8 +3188,6 @@ templates = [
 ]
 ```
 
-
-
 ## UCF101
 
 ```bash
@@ -3397,5 +3346,3 @@ templates = [
     'a demonstration of the person practicing {}.',
 ]
 ```
-
-
