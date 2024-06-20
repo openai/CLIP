@@ -60,7 +60,7 @@ The device to run the model can be optionally specified, and the default is to u
 
 Returns a LongTensor containing tokenized sequences of given text input(s). This can be used as the input to the model
 
-______________________________________________________________________
+---
 
 The model returned by `clip.load()` supports the following methods:
 

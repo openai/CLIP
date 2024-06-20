@@ -8,6 +8,7 @@ import clip
 
 @pytest.mark.parametrize("model_name", clip.available_models())
 def test_consistency(model_name):
+    """Test consistency between JIT and non-JIT model outputs using CLIP for given model names."""
     device = "cpu"
     jit_model, transform = clip.load(model_name, device=device, jit=True)
     py_model, _ = clip.load(model_name, device=device, jit=False)

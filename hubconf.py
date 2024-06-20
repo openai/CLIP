@@ -40,6 +40,7 @@ def _create_hub_entrypoint(model):
 
 
 def tokenize():
+    """Returns the _tokenize function for tokenizing input data."""
     return _tokenize
 
 

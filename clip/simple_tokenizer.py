@@ -9,6 +9,7 @@ import regex as re
 
 @lru_cache()
 def default_bpe():
+    """Returns the file path to the default BPE vocabulary file 'bpe_simple_vocab_16e6.txt.gz'."""
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
 
 
@@ -49,12 +50,16 @@ def get_pairs(word):
 
 
 def basic_clean(text):
+    """Clean text by fixing encoding issues and unescaping HTML entities, then stripping extraneous whitespace."""
     text = ftfy.fix_text(text)
     text = html.unescape(html.unescape(text))
     return text.strip()
 
 
 def whitespace_clean(text):
+    """Clean text by collapsing multiple whitespace characters into a single space and trimming leading/trailing
+    whitespace.
+    """
     text = re.sub(r"\s+", " ", text)
     text = text.strip()
     return text
@@ -62,6 +67,9 @@ def whitespace_clean(text):
 
 class SimpleTokenizer(object):
     def __init__(self, bpe_path: str = default_bpe()):
+        """Initialize the SimpleTokenizer object with byte pair encoding (BPE) paths and set up encoders, decoders, and
+        patterns.
+        """
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}
         merges = gzip.open(bpe_path).read().decode("utf-8").split("\n")
@@ -81,6 +89,7 @@ class SimpleTokenizer(object):
         )
 
     def bpe(self, token):
+        """Apply byte pair encoding (BPE) to a given token and cache the result."""
         if token in self.cache:
             return self.cache[token]
         word = tuple(token[:-1]) + (f"{token[-1]}</w>",)
@@ -122,6 +131,7 @@ class SimpleTokenizer(object):
         return word
 
     def encode(self, text):
+        """Converts input text to BPE tokens using byte-pair encoding and pre-defined tokenization rules."""
         bpe_tokens = []
         text = whitespace_clean(basic_clean(text)).lower()
         for token in re.findall(self.pat, text):
@@ -130,5 +140,6 @@ class SimpleTokenizer(object):
         return bpe_tokens
 
     def decode(self, tokens):
+        """Decodes a list of BPE tokens into a UTF-8 string, replacing '</w>' with a space."""
         text = "".join([self.decoder[token] for token in tokens])
         return bytearray([self.byte_decoder[c] for c in text]).decode("utf-8", errors="replace").replace("</w>", " ")

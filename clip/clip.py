@@ -42,6 +42,9 @@ _MODELS = {
 
 
 def _download(url: str, root: str):
+    """Downloads a file from the provided URL to the root directory, ensuring file integrity via SHA256 checksum
+    validation.
+    """
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
 
@@ -76,10 +79,14 @@ def _download(url: str, root: str):
 
 
 def _convert_image_to_rgb(image):
+    """Convert an image to RGB format using the PIL library."""
     return image.convert("RGB")
 
 
 def _transform(n_px):
+    """Apply a series of image transformations including resizing, center cropping, RGB conversion, tensor conversion,
+    and normalization.
+    """
     return Compose(
         [
             Resize(n_px, interpolation=BICUBIC),

@@ -11,6 +11,7 @@ class Bottleneck(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1):
+        """Initializes the Bottleneck module with given input planes, output planes, and stride."""
         super().__init__()
 
         # all conv layers have stride 1. an avgpool is performed after the second convolution when stride > 1
@@ -44,6 +45,7 @@ class Bottleneck(nn.Module):
             )
 
     def forward(self, x: torch.Tensor):
+        """Process input tensor `x` through the defined network layers and return the output tensor."""
         identity = x
 
         out = self.relu1(self.bn1(self.conv1(x)))
@@ -61,6 +63,9 @@ class Bottleneck(nn.Module):
 
 class AttentionPool2d(nn.Module):
     def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
+        """Initializes AttentionPool2d with spatial dimension, embedding dimension, number of heads, and optional output
+        dimension.
+        """
         super().__init__()
         self.positional_embedding = nn.Parameter(torch.randn(spacial_dim**2 + 1, embed_dim) / embed_dim**0.5)
         self.k_proj = nn.Linear(embed_dim, embed_dim)
@@ -70,6 +75,9 @@ class AttentionPool2d(nn.Module):
         self.num_heads = num_heads
 
     def forward(self, x):
+        """Executes the forward pass of the model using multi-head attention on input tensor 'x', returning the
+        processed data.
+        """
         x = x.flatten(start_dim=2).permute(2, 0, 1)  # NCHW -> (HW)NC
         x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
         x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
@@ -107,6 +115,9 @@ class ModifiedResNet(nn.Module):
     """
 
     def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):
+        """Initialize model with customizable layers, output dimensions, attention heads, input resolution, and width
+        parameters.
+        """
         super().__init__()
         self.output_dim = output_dim
         self.input_resolution = input_resolution
@@ -134,6 +145,7 @@ class ModifiedResNet(nn.Module):
         self.attnpool = AttentionPool2d(input_resolution // 32, embed_dim, heads, output_dim)
 
     def _make_layer(self, planes, blocks, stride=1):
+        """Constructs a sequential layer of Bottleneck blocks with the given planes, number of blocks, and stride."""
         layers = [Bottleneck(self._inplanes, planes, stride)]
 
         self._inplanes = planes * Bottleneck.expansion
@@ -141,6 +153,10 @@ class ModifiedResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        """Forward pass through the network stem, applying convolutions, batch normalization, ReLU activations, and
+        average pooling.
+        """
+
         def stem(x):
             x = self.relu1(self.bn1(self.conv1(x)))
             x = self.relu2(self.bn2(self.conv2(x)))
@@ -163,6 +179,7 @@ class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def forward(self, x: torch.Tensor):
+        """Performs forward pass through the LayerNorm, converting input to float32 and back to its original type."""
         orig_type = x.dtype
         ret = super().forward(x.type(torch.float32))
         return ret.type(orig_type)
@@ -170,11 +187,13 @@ class LayerNorm(nn.LayerNorm):
 
 class QuickGELU(nn.Module):
     def forward(self, x: torch.Tensor):
+        """Applies the QuickGELU activation function to an input tensor."""
         return x * torch.sigmoid(1.702 * x)
 
 
 class ResidualAttentionBlock(nn.Module):
     def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None):
+        """Initializes the ResidualAttentionBlock with model dimension, number of heads, and optional attention mask."""
         super().__init__()
 
         self.attn = nn.MultiheadAttention(d_model, n_head)
@@ -192,10 +211,14 @@ class ResidualAttentionBlock(nn.Module):
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
+        """Compute scaled dot-product attention using query, key, and value tensors, with optional attention mask
+        adjustment.
+        """
         self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
+        """Performs forward pass through the network, applying attention and MLP layers sequentially."""
         x = x + self.attention(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
@@ -203,17 +226,22 @@ class ResidualAttentionBlock(nn.Module):
 
 class Transformer(nn.Module):
     def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):
+        """Initializes the Transformer model with specified width, layers, heads, and optional attention mask."""
         super().__init__()
         self.width = width
         self.layers = layers
         self.resblocks = nn.Sequential(*[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)])
 
     def forward(self, x: torch.Tensor):
+        """Process the input tensor 'x' through a sequence of residual attention blocks."""
         return self.resblocks(x)
 
 
 class VisionTransformer(nn.Module):
     def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int):
+        """Initialize a VisionTransformer with given input resolution, patch size, width, layers, heads, and output
+        dimension.
+        """
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
@@ -230,6 +258,7 @@ class VisionTransformer(nn.Module):
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
     def forward(self, x: torch.Tensor):
+        """Processes input tensor through embedding, layer normalization, and transformer layers."""
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -314,6 +343,7 @@ class CLIP(nn.Module):
         self.initialize_parameters()
 
     def initialize_parameters(self):
+        """Initialize the parameters of the token and positional embeddings with normal distributions."""
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
 
@@ -343,7 +373,9 @@ class CLIP(nn.Module):
             nn.init.normal_(self.text_projection, std=self.transformer.width**-0.5)
 
     def build_attention_mask(self):
-        # lazily create causal attention mask, with full attention between the vision tokens
+        """Create a causal attention mask with full attention between vision tokens, using an additive attention mask
+        filled with -inf.
+        """
         # pytorch uses additive attention mask; fill with -inf
         mask = torch.empty(self.context_length, self.context_length)
         mask.fill_(float("-inf"))
@@ -352,12 +384,15 @@ class CLIP(nn.Module):
 
     @property
     def dtype(self):
+        """Return the data type of the weights of the first convolutional layer in the visual model."""
         return self.visual.conv1.weight.dtype
 
     def encode_image(self, image):
+        """Encodes an input image using the visual model and returns the encoded representation."""
         return self.visual(image.type(self.dtype))
 
     def encode_text(self, text):
+        """Encodes input text using the token embedding and converts it to the specified data type."""
         x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
 
         x = x + self.positional_embedding.type(self.dtype)
@@ -373,6 +408,7 @@ class CLIP(nn.Module):
         return x
 
     def forward(self, image, text):
+        """Processes input image and text data through encoder modules and returns the respective features."""
         image_features = self.encode_image(image)
         text_features = self.encode_text(text)
 
@@ -414,6 +450,7 @@ def convert_weights(model: nn.Module):
 
 
 def build_model(state_dict: dict):
+    """Builds and returns a CLIP model from the provided state dictionary."""
     vit = "visual.proj" in state_dict
 
     if vit:
