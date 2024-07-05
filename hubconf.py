@@ -12,6 +12,8 @@ model_functions = {model: re.sub(f"[{string.punctuation}]", "_", model) for mode
 
 
 def _create_hub_entrypoint(model):
+    """Creates an entry point for loading the specified CLIP model with adjustable parameters."""
+
     def entrypoint(**kwargs):
         return _load(model, **kwargs)
 

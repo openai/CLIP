@@ -304,6 +304,9 @@ class CLIP(nn.Module):
         transformer_heads: int,
         transformer_layers: int,
     ):
+        """Initializes CLIP model with vision and text components for multi-modal embedding with specified dimensions
+        and layers.
+        """
         super().__init__()
 
         self.context_length = context_length
