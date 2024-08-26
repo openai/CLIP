@@ -66,6 +66,8 @@ def whitespace_clean(text):
 
 
 class SimpleTokenizer(object):
+    """Tokenizes text using byte pair encoding (BPE) and predefined tokenization rules for efficient text processing."""
+
     def __init__(self, bpe_path: str = default_bpe()):
         """Initialize the SimpleTokenizer object with byte pair encoding (BPE) paths and set up encoders, decoders, and
         patterns.

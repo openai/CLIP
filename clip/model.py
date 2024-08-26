@@ -8,6 +8,8 @@ from torch import nn
 
 
 class Bottleneck(nn.Module):
+    """Implements a residual bottleneck block with downsampling and expansion for deep neural networks."""
+
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1):
@@ -62,6 +64,8 @@ class Bottleneck(nn.Module):
 
 
 class AttentionPool2d(nn.Module):
+    """Applies multi-head attention pooling over 2D spatial data, transforming it into a fixed-size output embedding."""
+
     def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
         """Initializes AttentionPool2d with spatial dimension, embedding dimension, number of heads, and optional output
         dimension.
@@ -189,12 +193,16 @@ class LayerNorm(nn.LayerNorm):
 
 
 class QuickGELU(nn.Module):
+    """Applies the QuickGELU activation function, a faster approximation of GELU, to an input tensor."""
+
     def forward(self, x: torch.Tensor):
         """Applies the QuickGELU activation function to an input tensor."""
         return x * torch.sigmoid(1.702 * x)
 
 
 class ResidualAttentionBlock(nn.Module):
+    """Implements a residual attention block with multi-head attention and MLP layers for transformer models."""
+
     def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None):
         """Initializes the ResidualAttentionBlock with model dimension, number of heads, and optional attention mask."""
         super().__init__()
@@ -228,6 +236,8 @@ class ResidualAttentionBlock(nn.Module):
 
 
 class Transformer(nn.Module):
+    """Processes input tensors through multiple residual attention blocks for sequence modeling tasks."""
+
     def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):
         """Initializes the Transformer model with specified width, layers, heads, and optional attention mask."""
         super().__init__()
@@ -241,6 +251,8 @@ class Transformer(nn.Module):
 
 
 class VisionTransformer(nn.Module):
+    """Vision Transformer model for image classification using patch embeddings and multi-head self-attention."""
+
     def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int):
         """Initialize a VisionTransformer with given input resolution, patch size, width, layers, heads, and output
         dimension.
@@ -289,6 +301,8 @@ class VisionTransformer(nn.Module):
 
 
 class CLIP(nn.Module):
+    """Multi-modal model combining vision and text encoders for joint embeddings based on arxiv.org/abs/2103.00020."""
+
     def __init__(
         self,
         embed_dim: int,
