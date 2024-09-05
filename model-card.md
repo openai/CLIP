@@ -1,6 +1,6 @@
 # Model Card: CLIP
 
-Inspired by [Model Cards for Model Reporting (Mitchell et al.)](https://arxiv.org/abs/1810.03993) and [Lessons from Archives (Jo & Gebru)](https://arxiv.org/pdf/1912.10389.pdf), we’re providing some accompanying information about the multimodal model.
+Inspired by [Model Cards for Model Reporting (Mitchell et al.)](https://arxiv.org/abs/1810.03993) and [Lessons from Archives (Jo & Gebru)](http://arxiv.org/pdf/1912.10389), we’re providing some accompanying information about the multimodal model.
 
 ## Model Details
 
@@ -109,4 +109,4 @@ We also tested the performance of CLIP on gender, race and age classification us
 
 ### Where to send questions or comments about the model
 
-Please use [this Google Form](https://forms.gle/Uv7afRH5dvY34ZEs9)
+Please use [this Google Form](https://docs.google.com/forms/d/e/1FAIpQLSfRGWV17mtjtVnFYQwatyDBY1KX8yayYaAIwuFVC80Url15yA/viewform?usp=send_form)
