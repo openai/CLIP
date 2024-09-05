@@ -1,6 +1,6 @@
 # Model Card: CLIP
 
-Inspired by [Model Cards for Model Reporting (Mitchell et al.)](https://arxiv.org/abs/1810.03993) and [Lessons from Archives (Jo & Gebru)](http://arxiv.org/pdf/1912.10389), we’re providing some accompanying information about the multimodal model.
+Inspired by [Model Cards for Model Reporting (Mitchell et al.)](https://arxiv.org/abs/1810.03993) and [Lessons from Archives (Jo & Gebru)](https://arxiv.org/pdf/1912.10389), we’re providing some accompanying information about the multimodal model.
 
 ## Model Details
 
