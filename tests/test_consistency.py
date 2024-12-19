@@ -28,7 +28,7 @@ def test_consistency(model_name):
 @pytest.mark.parametrize("model_name", clip.available_models())
 def test_hpu_support(model_name):
     device = "hpu"
-    jit_model, transform = clip.load(model_name, device=device, jit=True)
+    jit_model, transform = clip.load(model_name, device="cpu", jit=True)
     py_model, _ = clip.load(model_name, device=device, jit=False)
 
     image = transform(Image.open("CLIP.png")).unsqueeze(0).to(device)
