@@ -193,6 +193,65 @@ print(f"Accuracy = {accuracy:.3f}")
 Note that the `C` value should be determined via a hyperparameter sweep using a validation split.
 
 
+## Intel® Gaudi® HPU Usage
+
+### Build the Docker Image
+To use Intel® Gaudi® HPU for running this notebook, start by building a Docker image with the appropriate environment setup.  
+
+```bash
+docker build -t clip_hpu:latest -f Dockerfile.hpu .
+```  
+
+In the `Dockerfile.hpu`, we use the `vault.habana.ai/gaudi-docker/1.18.0/ubuntu22.04/habanalabs/pytorch-installer-2.3.1:latest` base image. Ensure that the version matches your setup.  
+See the [PyTorch Docker Images for the Intel® Gaudi® Accelerator](https://developer.habana.ai/catalog/pytorch-container/) for more information.  
+
+### Run the Container  
+
+```bash
+docker run -it --runtime=habana clip_hpu:latest
+```  
+
+Optionally, you can add a mapping volume (`-v`) to access your project directory inside the container. Add the flag `-v /path/to/your/project:/workspace/project` to the `docker run` command.  
+Replace `/path/to/your/project` with the path to your project directory on your local machine.  
+
+### Command-line Usage with Intel® Gaudi® HPU  
+
+To run the notebook with Intel® Gaudi® HPU, use the `--device hpu` option when specifying the device in the code.  
+
+For example, modify the device assignment as follows:  
+
+```python
+device = 'hpu' if torch.device('hpu').is_available() else 'cuda' if torch.cuda.is_available() else 'cpu'
+model.to(device)
+image_input = image_input.to(device)
+text_tokens = text_tokens.to(device)
+```
+
+### Python Usage with Intel® Gaudi® HPU  
+
+To leverage Intel® Gaudi® HPU in Python, ensure that the device is specified as `hpu` during model initialization and tensor manipulation.  
+
+```python
+import clip
+import torch
+
+# Load the model on HPU
+device = "hpu"
+model, preprocess = clip.load("ViT-B/32", device=device)
+
+# Prepare data and move to HPU
+image_input = preprocess(image).unsqueeze(0).to(device)
+text_tokens = clip.tokenize("a sample text").to(device)
+
+# Run inference
+with torch.no_grad():
+    image_features = model.encode_image(image_input)
+    text_features = model.encode_text(text_tokens)
+
+print("Inference completed on HPU")
+```
+
+
 ## See Also
 
 * [OpenCLIP](https://github.com/mlfoundations/open_clip): includes larger and independently trained CLIP models up to ViT-G/14
