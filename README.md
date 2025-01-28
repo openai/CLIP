@@ -29,7 +29,9 @@ import torch
 import clip
 from PIL import Image
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+from clip.utils import get_device_initial
+
+device = get_device_initial() # "HPU" if using Intel® Gaudi® HPU, "cuda" if using CUDA GPU, "cpu" otherwise
 model, preprocess = clip.load("ViT-B/32", device=device)
 
 image = preprocess(Image.open("CLIP.png")).unsqueeze(0).to(device)
@@ -94,8 +96,10 @@ import clip
 import torch
 from torchvision.datasets import CIFAR100
 
+from clip.utils import get_device_initial
+
 # Load the model
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = get_device_initial()
 model, preprocess = clip.load('ViT-B/32', device)
 
 # Download the dataset
@@ -153,8 +157,10 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100
 from tqdm import tqdm
 
+from clip.utils import get_device_initial
+
 # Load the model
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = get_device_initial()
 model, preprocess = clip.load('ViT-B/32', device)
 
 # Load the dataset
@@ -209,47 +215,11 @@ See the [PyTorch Docker Images for the Intel® Gaudi® Accelerator](https://deve
 
 ```bash
 docker run -it --runtime=habana clip_hpu:latest
-```  
-
-Optionally, you can add a mapping volume (`-v`) to access your project directory inside the container. Add the flag `-v /path/to/your/project:/workspace/project` to the `docker run` command.  
-Replace `/path/to/your/project` with the path to your project directory on your local machine.  
-
-### Command-line Usage with Intel® Gaudi® HPU  
-
-To run the notebook with Intel® Gaudi® HPU, use the `--device hpu` option when specifying the device in the code.  
-
-For example, modify the device assignment as follows:  
-
-```python
-device = 'hpu' if torch.device('hpu').is_available() else 'cuda' if torch.cuda.is_available() else 'cpu'
-model.to(device)
-image_input = image_input.to(device)
-text_tokens = text_tokens.to(device)
-```
+```   
 
 ### Python Usage with Intel® Gaudi® HPU  
 
-To leverage Intel® Gaudi® HPU in Python, ensure that the device is specified as `hpu` during model initialization and tensor manipulation.  
-
-```python
-import clip
-import torch
-
-# Load the model on HPU
-device = "hpu"
-model, preprocess = clip.load("ViT-B/32", device=device)
-
-# Prepare data and move to HPU
-image_input = preprocess(image).unsqueeze(0).to(device)
-text_tokens = clip.tokenize("a sample text").to(device)
-
-# Run inference
-with torch.no_grad():
-    image_features = model.encode_image(image_input)
-    text_features = model.encode_text(text_tokens)
-
-print("Inference completed on HPU")
-```
+You do not need to change the code to leverage Intel® Gaudi® HPU. The `get_device_initial()` function will automatically detect the correct device and return the appropriate device name. So no changes are required.
 
 
 ## See Also
