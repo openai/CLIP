@@ -221,6 +221,12 @@ docker run -it --runtime=habana clip_hpu:latest
 
 You do not need to change the code to leverage Intel® Gaudi® HPU. The `get_device_initial()` function will automatically detect the correct device and return the appropriate device name. So no changes are required.
 
+### Run the Tests
+
+```bash
+pytest
+```
+This will run the tests and verify that the model is working correctly.
 
 ## See Also
 
