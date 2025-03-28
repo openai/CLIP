@@ -4,7 +4,7 @@
 
 [\[Blog\]](https://openai.com/blog/clip/) [\[Paper\]](https://arxiv.org/abs/2103.00020) [\[Model Card\]](model-card.md) [\[Colab\]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
 
-CLIP (Contrastive Language-Image Pre-Training) is a [neural network](https://www.ultralytics.com/glossary/neural-network-nn) trained on a diverse set of (image, text) pairs sourced from the internet. Developed by OpenAI, it can be instructed using natural language to predict the most relevant text snippet for a given image, without needing task-specific training data. This capability mirrors the [zero-shot learning](https://www.ultralytics.com/glossary/zero-shot-learning) performance seen in models like [GPT-2](https://openai.com/research/gpt-2) and [GPT-3](https://www.ultralytics.com/glossary/gpt-3). Notably, CLIP matches the performance of the original [ResNet50](https://arxiv.org/abs/1512.03385) on [ImageNet](https://docs.ultralytics.com/datasets/classify/imagenet/) classification tasks "zero-shot," meaning it achieves this without using any of the 1.28 million labeled examples from the ImageNet training set, thereby overcoming significant challenges in traditional [computer vision](https://www.ultralytics.com/glossary/computer-vision-cv).
+CLIP (Contrastive Language-Image Pre-Training) is a [neural network](https://www.ultralytics.com/glossary/neural-network-nn) trained on a diverse set of (image, text) pairs sourced from the internet. Developed by OpenAI, it can be instructed using [natural language](https://www.ultralytics.com/glossary/natural-language-processing-nlp) to predict the most relevant text snippet for a given image, without needing task-specific training data. This capability mirrors the [zero-shot learning](https://www.ultralytics.com/glossary/zero-shot-learning) performance seen in models like [GPT-2](https://openai.com/research/gpt-2) and [GPT-3](https://www.ultralytics.com/glossary/gpt-3). Notably, CLIP matches the performance of the original [ResNet50](https://arxiv.org/abs/1512.03385) on [ImageNet](https://docs.ultralytics.com/datasets/classify/imagenet/) [classification tasks](https://docs.ultralytics.com/tasks/classify/) "zero-shot," meaning it achieves this without using any of the 1.28 million labeled examples from the ImageNet training set, thereby overcoming significant challenges in traditional [computer vision](https://www.ultralytics.com/glossary/computer-vision-cv).
 
 ## 🖼️ Approach
 
@@ -287,15 +287,15 @@ print(f"Linear probe accuracy = {accuracy:.3f}%")
 # Expected output might be around 70-80% accuracy for ViT-B/32 on CIFAR-100
 ```
 
-**Note:** The regularization strength `C` is a crucial [hyperparameter](https://www.ultralytics.com/glossary/hyperparameter-tuning). Its optimal value should be found through techniques like cross-validation or using a dedicated validation split, rather than using a fixed value as shown here for simplicity.
+**Note:** The regularization strength `C` is a crucial [hyperparameter](https://www.ultralytics.com/glossary/hyperparameter-tuning). Its optimal value should be found through techniques like [cross-validation](https://www.ultralytics.com/glossary/cross-validation) or using a dedicated validation split, rather than using a fixed value as shown here for simplicity. Refer to our [Hyperparameter Tuning Guide](https://docs.ultralytics.com/guides/hyperparameter-tuning/) for more details.
 
 ## 🔗 See Also
 
 - **[OpenCLIP](https://github.com/mlfoundations/open_clip):** An open-source implementation offering various pre-trained CLIP models, including larger ones like ViT-G/14, trained on the LAION dataset.
 - **[Hugging Face Transformers `CLIPModel`](https://huggingface.co/docs/transformers/model_doc/clip):** Provides an implementation of CLIP integrated within the popular [Hugging Face](https://www.ultralytics.com/glossary/hugging-face) ecosystem, facilitating easier use with other Transformers models and tools.
-- **[Ultralytics YOLO Models](https://docs.ultralytics.com/models/):** Explore state-of-the-art object detection models like [YOLOv8](https://docs.ultralytics.com/models/yolov8/) and [YOLOv10](https://docs.ultralytics.com/models/yolov10/) which can be used alongside or as alternatives to CLIP for various vision tasks.
+- **[Ultralytics YOLO Models](https://docs.ultralytics.com/models/):** Explore state-of-the-art [object detection](https://www.ultralytics.com/glossary/object-detection) models like [YOLOv8](https://docs.ultralytics.com/models/yolov8/) and [YOLOv10](https://docs.ultralytics.com/models/yolov10/) which can be used alongside or as alternatives to CLIP for various vision tasks.
 - **[Multi-Modal Learning Glossary](https://www.ultralytics.com/glossary/multi-modal-learning):** Understand the broader context of models that process information from multiple modalities like text and images.
 
 ## 🤝 Contributing
 
-Contributions to enhance CLIP or integrate it further are welcome! Please see the [main Ultralytics contribution guidelines](https://docs.ultralytics.com/help/contributing/) for more information on how to get started. Thank you for contributing to the open-source AI community!
+Contributions to enhance CLIP or integrate it further are welcome! Please see the [Ultralytics Contributing Guidelines](https://docs.ultralytics.com/help/contributing/) for more information on how to get started. We appreciate your help in improving our open-source resources for the AI community!
