@@ -1,6 +1,7 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
 name: test
+
 on:
   push:
     branches:
@@ -8,28 +9,28 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   CLIP-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
-        pytorch-version: [1.7.1, 1.9.1, 1.10.1]
-        include:
-          - python-version: 3.8
-            pytorch-version: 1.7.1
-            torchvision-version: 0.8.2
-          - python-version: 3.8
-            pytorch-version: 1.9.1
-            torchvision-version: 0.10.1
-          - python-version: 3.8
-            pytorch-version: 1.10.1
-            torchvision-version: 0.11.2
+        python-version: [3.11, 3.12]
+        pytorch-version: [2.5.0, 2.6.0]
+    
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
-      - run: conda install -n test python=${{ matrix.python-version }} pytorch=${{ matrix.pytorch-version }} torchvision=${{ matrix.torchvision-version }} cpuonly -c pytorch
-      - uses: actions/checkout@v2
-      - run: echo "$CONDA/envs/test/bin" >> $GITHUB_PATH
-      - run: pip install pytest
-      - run: pip install .
-      - run: pytest
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system -e . torch==${{ matrix.pytorch-version }} torchvision pytest --extra-index-url https://download.pytorch.org/whl/cpu
+      
+      - name: Run tests
+        run: pytest
