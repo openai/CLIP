@@ -1,0 +1,35 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+[build-system]
+# Define the build system requirements for the project
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# CLIP (Contrastive Language-Image Pre-Training) is a neural network trained on a variety of
+# image-text pairs, capable of zero-shot prediction without task-specific training data
+name = "clip"
+version = "1.0"
+description = "Contrastive Language-Image Pre-Training model by OpenAI"
+authors = [
+    {name = "OpenAI"}
+]
+requires-python = ">=3.7"
+# Core dependencies needed for CLIP functionality
+dependencies = [
+    "ftfy",      # Text preprocessing library for fixing Unicode errors
+    "regex",     # Enhanced regular expression library
+    "tqdm",      # Progress bar library for tracking long-running operations
+    "torch",     # PyTorch deep learning framework
+    "torchvision",  # Computer vision library for PyTorch
+]
+
+[project.optional-dependencies]
+# Additional dependencies for development and testing
+dev = ["pytest"]  # Testing framework for Python
+
+[tool.setuptools]
+# Module and package configuration
+py-modules = ["clip"]  # The main CLIP module
+packages = {find = {exclude = ["tests*"]}}  # Auto-discover packages but exclude tests
+include-package-data = true  # Include non-Python files specified in MANIFEST.in
