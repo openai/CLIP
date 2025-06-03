@@ -4,3 +4,4 @@ regex
 tqdm
 torch
 torchvision
+safetensors
