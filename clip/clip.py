@@ -4,7 +4,7 @@ import hashlib
 import os
 import urllib
 import warnings
-from typing import List, Union
+from typing import Union
 
 import torch
 from packaging import version
@@ -100,7 +100,7 @@ def _transform(n_px):
     )
 
 
-def available_models() -> List[str]:
+def available_models() -> list[str]:
     """Returns the names of available CLIP models."""
     return list(_MODELS.keys())
 
@@ -221,7 +221,7 @@ def load(name: str, device: Union[str, torch.device] = None, jit: bool = False, 
 
 
 def tokenize(
-    texts: Union[str, List[str]], context_length: int = 77, truncate: bool = False
+    texts: Union[str, list[str]], context_length: int = 77, truncate: bool = False
 ) -> Union[torch.IntTensor, torch.LongTensor]:
     """
     Returns the tokenized representation of given input string(s).
