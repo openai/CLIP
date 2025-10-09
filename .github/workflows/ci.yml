@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
         run: uv pip install --system -e . torch==${{ matrix.pytorch-version }} torchvision pytest --extra-index-url https://download.pytorch.org/whl/cpu
