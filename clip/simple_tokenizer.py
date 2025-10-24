@@ -96,7 +96,7 @@ class SimpleTokenizer:
         """Apply byte pair encoding (BPE) to a given token and cache the result."""
         if token in self.cache:
             return self.cache[token]
-        word = tuple(token[:-1]) + (f"{token[-1]}</w>",)
+        word = (*tuple(token[:-1]), f"{token[-1]}</w>")
         pairs = get_pairs(word)
 
         if not pairs:

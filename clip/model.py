@@ -69,7 +69,7 @@ class Bottleneck(nn.Module):
 class AttentionPool2d(nn.Module):
     """Applies multi-head attention pooling over 2D spatial data, transforming it into a fixed-size output embedding."""
 
-    def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
+    def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int | None = None):
         """Initializes AttentionPool2d with spatial dimension, embedding dimension, number of heads, and optional output
         dimension.
         """
@@ -514,8 +514,7 @@ def build_model(state_dict: dict):
     )
 
     for key in ["input_resolution", "context_length", "vocab_size"]:
-        if key in state_dict:
-            del state_dict[key]
+        state_dict.pop(key, None)
 
     convert_weights(model)
     model.load_state_dict(state_dict)

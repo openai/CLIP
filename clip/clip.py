@@ -106,7 +106,7 @@ def available_models() -> list[str]:
     return list(_MODELS.keys())
 
 
-def load(name: str, device: str | torch.device = None, jit: bool = False, download_root: str = None):
+def load(name: str, device: str | torch.device = None, jit: bool = False, download_root: str | None = None):
     """
     Load a CLIP model.
 
@@ -248,7 +248,7 @@ def tokenize(
 
     sot_token = _tokenizer.encoder["<|startoftext|>"]
     eot_token = _tokenizer.encoder["<|endoftext|>"]
-    all_tokens = [[sot_token] + _tokenizer.encode(text) + [eot_token] for text in texts]
+    all_tokens = [[sot_token, *_tokenizer.encode(text), eot_token] for text in texts]
     result = torch.zeros(
         len(all_tokens),
         context_length,
