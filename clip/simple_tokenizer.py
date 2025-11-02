@@ -17,8 +17,7 @@ def default_bpe():
 
 @lru_cache
 def bytes_to_unicode():
-    """
-    Returns list of utf-8 byte and a corresponding list of unicode strings.
+    """Returns list of utf-8 byte and a corresponding list of unicode strings.
 
     The reversible bpe codes work on unicode strings. This means you need a large # of unicode characters in your vocab
     if you want to avoid UNKs. When you're at something like a 10B token dataset you end up needing around 5K for decent
@@ -38,8 +37,7 @@ def bytes_to_unicode():
 
 
 def get_pairs(word):
-    """
-    Return set of symbol pairs in a word.
+    """Return set of symbol pairs in a word.
 
     Word is represented as tuple of symbols (symbols being variable-length strings).
     """

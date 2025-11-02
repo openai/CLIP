@@ -107,8 +107,7 @@ def available_models() -> list[str]:
 
 
 def load(name: str, device: str | torch.device = None, jit: bool = False, download_root: str | None = None):
-    """
-    Load a CLIP model.
+    """Load a CLIP model.
 
     Parameters
     ----------
@@ -164,8 +163,7 @@ def load(name: str, device: str | torch.device = None, jit: bool = False, downlo
     device_node = [n for n in device_holder.graph.findAllNodes("prim::Constant") if "Device" in repr(n)][-1]
 
     def _node_get(node: torch._C.Node, key: str):
-        """
-        Gets attributes of a node which is polymorphic over return type.
+        """Gets attributes of a node which is polymorphic over return type.
 
         From https://github.com/pytorch/pytorch/pull/82628
         """
@@ -224,8 +222,7 @@ def load(name: str, device: str | torch.device = None, jit: bool = False, downlo
 def tokenize(
     texts: str | list[str], context_length: int = 77, truncate: bool = False
 ) -> torch.IntTensor | torch.LongTensor:
-    """
-    Returns the tokenized representation of given input string(s).
+    """Returns the tokenized representation of given input string(s).
 
     Parameters
     ----------
@@ -240,8 +237,8 @@ def tokenize(
 
     Returns
     -------
-    A two-dimensional tensor containing the resulting tokens, shape = [number of input strings, context_length].
-    We return LongTensor when torch version is <1.8.0, since older index_select requires indices to be long.
+    A two-dimensional tensor containing the resulting tokens, shape = [number of input strings, context_length]. We
+    return LongTensor when torch version is <1.8.0, since older index_select requires indices to be long.
     """
     if isinstance(texts, str):
         texts = [texts]
