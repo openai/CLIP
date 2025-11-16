@@ -1,0 +1,34 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+name: ❓ Question
+description: "Ask an Ultralytics CLIP question"
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for asking an Ultralytics CLIP ❓ Question!
+
+  - type: checkboxes
+    attributes:
+      label: Search before asking
+      description: >
+        Please search the Ultralytics CLIP [README](https://github.com/ultralytics/CLIP#readme), [issues](https://github.com/ultralytics/CLIP/issues), and [Ultralytics discussions](https://github.com/orgs/ultralytics/discussions) to see if a similar question already exists.
+      options:
+        - label: >
+            I checked the docs, issues, and discussions and could not find an answer.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Question
+      description: What is your question? Provide as much detail as possible so we can assist with Ultralytics CLIP. Include code snippets, screenshots, logs, or links to notebooks/demos.
+      placeholder: |
+        💡 ProTip! Include as much information as possible (logs, tracebacks, screenshots, etc.) to receive the most helpful response.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional
+      description: Anything else you would like to share?

@@ -1,0 +1,51 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+name: 🚀 Feature Request
+description: "Suggest an Ultralytics CLIP enhancement"
+labels: [enhancement]
+type: "feature"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting an Ultralytics CLIP 🚀 Feature Request!
+
+  - type: checkboxes
+    attributes:
+      label: Search before asking
+      description: >
+        Please search the Ultralytics CLIP [README](https://github.com/ultralytics/CLIP#readme) and [issues](https://github.com/ultralytics/CLIP/issues) to see if a similar feature request already exists.
+      options:
+        - label: >
+            I have searched https://github.com/ultralytics/CLIP/issues and did not find a similar request.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: Briefly describe the feature you would like to see added to Ultralytics CLIP.
+      placeholder: |
+        What new capability or improvement are you proposing?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Use case
+      description: Explain how this feature would be used and who benefits from it. Screenshots or mockups are welcome.
+      placeholder: |
+        How would this feature improve your workflow?
+
+  - type: textarea
+    attributes:
+      label: Additional
+      description: Anything else you would like to share?
+
+  - type: checkboxes
+    attributes:
+      label: Are you willing to submit a PR?
+      description: >
+        (Optional) We encourage you to submit a [Pull Request](https://github.com/ultralytics/CLIP/pulls) to help improve Ultralytics CLIP.
+        See the Ultralytics [Contributing Guide](https://docs.ultralytics.com/help/contributing/) to get started.
+      options:
+        - label: Yes I'd like to help by submitting a PR!
