@@ -3,6 +3,7 @@
 import gzip
 import html
 import os
+import torch
 from functools import lru_cache
 
 import ftfy
@@ -89,6 +90,8 @@ class SimpleTokenizer:
             r"""<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+""",
             re.IGNORECASE,
         )
+        self.sot_token_id = self.encoder["<|startoftext|>"]
+        self.eot_token_id = self.encoder["<|endoftext|>"]
 
     def bpe(self, token):
         """Apply byte pair encoding (BPE) to a given token and cache the result."""
@@ -145,3 +148,27 @@ class SimpleTokenizer:
         """Decodes a list of BPE tokens into a UTF-8 string, replacing '</w>' with a space."""
         text = "".join([self.decoder[token] for token in tokens])
         return bytearray([self.byte_decoder[c] for c in text]).decode("utf-8", errors="replace").replace("</w>", " ")
+
+    def __call__(self, texts: str | list[str], context_length: int | None = None) -> torch.LongTensor:
+        """Returns the tokenized representation of given input string(s) Parameters.
+
+        Args:
+            texts: Union[str, list[str]] An input string or a list of input strings to tokenize.
+            context_length(int): The context length to use.
+
+        Returns:
+            (torch.Tensor): A two-dimensional tensor containing the resulting tokens, shape = [number of input strings,
+                context_length]
+        """
+        if isinstance(texts, str):
+            texts = [texts]
+        context_length = context_length or self.context_length
+        assert context_length, "Please set a valid context length"
+        all_tokens = [[self.sot_token_id, *self.encode(text), self.eot_token_id] for text in texts]
+        result = torch.zeros(len(all_tokens), context_length, dtype=torch.long)
+        for i, tokens in enumerate(all_tokens):
+            if len(tokens) > context_length:
+                tokens = tokens[:context_length]  # Truncate
+                tokens[-1] = self.eot_token_id
+            result[i, : len(tokens)] = torch.tensor(tokens)
+        return result
