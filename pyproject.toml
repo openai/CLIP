@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "regex", "ftfy", "tqdm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clip"
+version = "1.0"
+authors = [
+  { name="OpenAI", email="support@openai.com" },
+]
+description = "CLIP: Contrastive Language-Image Pre-training"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "torch",
+    "torchvision",
+    "ftfy",
+    "regex",
+    "tqdm",
+]
