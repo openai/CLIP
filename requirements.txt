@@ -4,3 +4,4 @@ regex
 tqdm
 torch
 torchvision
+setuptools==75.3.4
