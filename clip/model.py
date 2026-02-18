@@ -365,6 +365,7 @@ class CLIP(nn.Module):
 
         # cosine similarity as logits
         logit_scale = self.logit_scale.exp()
+        logit_scale = torch.clamp(logit_scale, max=100)
         logits_per_image = logit_scale * image_features @ text_features.t()
         logits_per_text = logits_per_image.t()
 
