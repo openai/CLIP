@@ -1,6 +1,6 @@
 import os
 
-import pkg_resources
+
 from setuptools import setup, find_packages
 
 setup(
@@ -11,10 +11,9 @@ setup(
     author="OpenAI",
     packages=find_packages(exclude=["tests*"]),
     install_requires=[
-        str(r)
-        for r in pkg_resources.parse_requirements(
-            open(os.path.join(os.path.dirname(__file__), "requirements.txt"))
-        )
+        line.strip()
+        for line in open(os.path.join(os.path.dirname(__file__), "requirements.txt"))
+        if line.strip() and not line.startswith("#")
     ],
     include_package_data=True,
     extras_require={'dev': ['pytest']},
