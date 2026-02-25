@@ -1,0 +1,3 @@
+-r requirements.txt
+optimum-habana==1.14.1
+pytest
