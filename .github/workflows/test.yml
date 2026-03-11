@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: conda-incubator/setup-miniconda@v2
       - run: conda install -n test python=${{ matrix.python-version }} pytorch=${{ matrix.pytorch-version }} torchvision=${{ matrix.torchvision-version }} cpuonly -c pytorch
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - run: echo "$CONDA/envs/test/bin" >> $GITHUB_PATH
       - run: pip install pytest
       - run: pip install .
