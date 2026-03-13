@@ -11,18 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
-        pytorch-version: [1.7.1, 1.9.1, 1.10.1]
+        pytorch-version: [1.7.1, 1.9.1, 1.10.1, 2.0.1]
         include:
-          - python-version: 3.8
+          - python-version: '3.8'
             pytorch-version: 1.7.1
             torchvision-version: 0.8.2
-          - python-version: 3.8
+          - python-version: '3.8'
             pytorch-version: 1.9.1
             torchvision-version: 0.10.1
-          - python-version: 3.8
+          - python-version: '3.8'
             pytorch-version: 1.10.1
             torchvision-version: 0.11.2
+          - python-version: '3.11'
+            pytorch-version: 2.0.1
+            torchvision-version: 0.15.2
     steps:
       - uses: conda-incubator/setup-miniconda@v2
       - run: conda install -n test python=${{ matrix.python-version }} pytorch=${{ matrix.pytorch-version }} torchvision=${{ matrix.torchvision-version }} cpuonly -c pytorch
