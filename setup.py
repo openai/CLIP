@@ -11,9 +11,10 @@ setup(
     author="OpenAI",
     packages=find_packages(exclude=["tests*"]),
     install_requires=[
-    line.strip()
+    stripped
     for line in open(os.path.join(os.path.dirname(__file__), "requirements.txt"))
-    if line.strip() and not line.startswith("#")
+    for stripped in [line.strip()]
+    if stripped and not stripped.startswith("#")
     ],
     include_package_data=True,
     extras_require={'dev': ['pytest']},
