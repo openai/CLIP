@@ -29,7 +29,9 @@ import torch
 import clip
 from PIL import Image
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+from clip.utils import get_device_initial
+
+device = get_device_initial() # "HPU" if using Intel® Gaudi® HPU, "cuda" if using CUDA GPU, "cpu" otherwise
 model, preprocess = clip.load("ViT-B/32", device=device)
 
 image = preprocess(Image.open("CLIP.png")).unsqueeze(0).to(device)
@@ -94,8 +96,10 @@ import clip
 import torch
 from torchvision.datasets import CIFAR100
 
+from clip.utils import get_device_initial
+
 # Load the model
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = get_device_initial()
 model, preprocess = clip.load('ViT-B/32', device)
 
 # Download the dataset
@@ -153,8 +157,10 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100
 from tqdm import tqdm
 
+from clip.utils import get_device_initial
+
 # Load the model
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = get_device_initial()
 model, preprocess = clip.load('ViT-B/32', device)
 
 # Load the dataset
@@ -192,6 +198,35 @@ print(f"Accuracy = {accuracy:.3f}")
 
 Note that the `C` value should be determined via a hyperparameter sweep using a validation split.
 
+
+## Intel® Gaudi® HPU Usage
+
+### Build the Docker Image
+To use Intel® Gaudi® HPU for running this notebook, start by building a Docker image with the appropriate environment setup.  
+
+```bash
+docker build -t clip_hpu:latest -f Dockerfile.hpu .
+```  
+
+In the `Dockerfile.hpu`, we use the `vault.habana.ai/gaudi-docker/1.18.0/ubuntu22.04/habanalabs/pytorch-installer-2.3.1:latest` base image. Ensure that the version matches your setup.  
+See the [PyTorch Docker Images for the Intel® Gaudi® Accelerator](https://developer.habana.ai/catalog/pytorch-container/) for more information.  
+
+### Run the Container  
+
+```bash
+docker run -it --runtime=habana clip_hpu:latest
+```   
+
+### Python Usage with Intel® Gaudi® HPU  
+
+You do not need to change the code to leverage Intel® Gaudi® HPU. The `get_device_initial()` function will automatically detect the correct device and return the appropriate device name. So no changes are required.
+
+### Run the Tests
+
+```bash
+pytest
+```
+This will run the tests and verify that the model is working correctly.
 
 ## See Also
 
